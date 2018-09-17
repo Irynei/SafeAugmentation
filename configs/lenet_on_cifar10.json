@@ -1,0 +1,36 @@
+{
+    "experiment_name": "LeNet_on_Cifar10",
+    "cuda": true,
+    "gpu": 0,
+    "data_loader": {
+        "name": "CIFAR10DataLoader",
+        "data_dir": "datasets/",
+        "batch_size": 32,
+        "shuffle": true
+    },
+    "model_name": "VGG16",
+    "model_params": {
+        "output_size": 5
+    },
+    "optimizer_type": "Adam",
+    "optimizer_params": {
+        "lr": 0.001,
+        "weight_decay": 0
+    },
+    "loss": "multi_label_soft_margin_loss",
+    "validation": {
+        "validation_split": 0.1,
+        "shuffle": true
+    },
+    "lr_scheduler": {
+    },
+    "metrics": [],
+    "trainer": {
+        "epochs": 10,
+        "save_dir": "experiments/",
+        "save_freq": 1,
+        "verbosity": 2,
+        "monitor": "val_loss",
+        "monitor_mode": "min"
+    }
+}

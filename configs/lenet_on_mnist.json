@@ -1,0 +1,41 @@
+{
+    "experiment_name": "LeNet on MNIST",
+    "cuda": true,
+    "gpu": 0,
+    "data_loader": {
+        "name": "MnistDataLoader",
+        "data_dir": "datasets/",
+        "batch_size": 32,
+        "shuffle": true
+    },
+    "model_name": "MnistModel",
+    "model_params": {
+        "output_size": 4
+    },
+    "optimizer_type": "Adam",
+    "optimizer_params": {
+        "lr": 0.001,
+        "weight_decay": 0
+    },
+    "loss": "multi_label_soft_margin_loss",
+    "validation": {
+        "validation_split": 0.1,
+        "shuffle": true
+    },
+    "lr_scheduler": {
+        "lr_scheduler_type": "ExponentialLR",
+        "lr_scheduler_freq": 1,
+        "additional_params": {
+            "gamma": 0.8685113737513527
+        }
+    },
+    "metrics": [],
+    "trainer": {
+        "epochs": 10,
+        "save_dir": "experiments/",
+        "save_freq": 1,
+        "verbosity": 2,
+        "monitor": "val_loss",
+        "monitor_mode": "min"
+    }
+}
