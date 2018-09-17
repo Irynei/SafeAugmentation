@@ -1,5 +1,5 @@
 {
-    "experiment_name": "LeNet_on_Cifar10",
+    "experiment_name": "VGG16_on_CIFAR10",
     "cuda": true,
     "gpu": 0,
     "data_loader": {
