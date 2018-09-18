@@ -10,7 +10,7 @@
     },
     "model_name": "MnistModel",
     "model_params": {
-        "output_size": 4
+        "num_classes": 4
     },
     "optimizer_type": "Adam",
     "optimizer_params": {
@@ -31,7 +31,7 @@
     },
     "metrics": [],
     "trainer": {
-        "epochs": 10,
+        "epochs": 5,
         "save_dir": "experiments/",
         "save_freq": 1,
         "verbosity": 2,

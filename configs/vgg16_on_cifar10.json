@@ -8,9 +8,9 @@
         "batch_size": 32,
         "shuffle": true
     },
-    "model_name": "VGG16",
+    "model_name": "vgg16",
     "model_params": {
-        "output_size": 5
+        "num_classes": 5
     },
     "optimizer_type": "Adam",
     "optimizer_params": {
