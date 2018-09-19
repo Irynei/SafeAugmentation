@@ -17,7 +17,7 @@
         "lr": 0.001,
         "weight_decay": 0
     },
-    "loss": "multi_label_soft_margin_loss",
+    "loss": "MultiLabelSoftMarginLoss",
     "validation": {
         "validation_split": 0.1,
         "shuffle": true

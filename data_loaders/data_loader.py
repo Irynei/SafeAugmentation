@@ -1,4 +1,5 @@
 import os
+
 from torchvision import datasets
 from torchvision.transforms import (
     RandomVerticalFlip,
@@ -12,9 +13,12 @@ from base import BaseDataLoader, AutoAugmentDataset
 
 
 def get_dataloader_instance(dataloader_name, config):
-    try:
-        dataloader = eval(dataloader_name)
-    except NameError:
+
+    if dataloader_name == 'MnistDataLoader':
+        dataloader = MnistDataLoader
+    elif dataloader_name == 'CIFAR10DataLoader':
+        dataloader = CIFAR10DataLoader
+    else:
         raise NameError("Dataloader '{dataloader}' not found.".format(dataloader=dataloader_name))
 
     dataloader_instance = dataloader(config)
