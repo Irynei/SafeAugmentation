@@ -1,7 +1,7 @@
 import os
 import math
-import logging
 import torch
+import glog as log
 import torch.optim as optim
 from utils.util import ensure_dir
 
@@ -24,7 +24,7 @@ class BaseTrainer:
         self.verbosity = config['trainer']['verbosity']
         self.optimizer = getattr(optim, config['optimizer_type'])(model.parameters(), **config['optimizer_params'])
 
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = log
         # handle GPU
         self.with_cuda = config['cuda'] and torch.cuda.is_available()
         if config['cuda'] and not torch.cuda.is_available():

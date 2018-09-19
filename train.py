@@ -1,8 +1,8 @@
 import os
 import json
 import torch
-import logging
 import argparse
+import glog as log
 from model.model import get_model_instance
 from model.loss import get_loss_function
 from model.metric import get_metric_functions
@@ -11,7 +11,7 @@ from logger import Logger
 from trainer import Trainer
 from utils.util import log_model_summary
 
-logging.basicConfig(level=logging.INFO, format='')
+log.setLevel("INFO")
 
 
 def main(config, resume, experiment_path):
@@ -37,7 +37,6 @@ def main(config, resume, experiment_path):
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger()
 
     parser = argparse.ArgumentParser(description='PyTorch Template')
     arg_group = parser.add_mutually_exclusive_group(required=True)
