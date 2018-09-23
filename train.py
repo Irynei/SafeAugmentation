@@ -1,17 +1,17 @@
 import os
 import json
 import torch
-import logging
 import argparse
+import glog as log
 from model.model import get_model_instance
 from model.loss import get_loss_function
 from model.metric import get_metric_functions
 from data_loaders import get_dataloader_instance
 from logger import Logger
 from trainer import Trainer
+from utils.util import log_model_summary
 
-
-logging.basicConfig(level=logging.INFO, format='')
+log.setLevel("INFO")
 
 
 def main(config, resume, experiment_path):
@@ -21,7 +21,7 @@ def main(config, resume, experiment_path):
     valid_data_loader = data_loader.get_validation_loader()
 
     model = get_model_instance(config['model_name'], **config['model_params'])
-    model.summary()
+    log_model_summary(model)
 
     loss = get_loss_function(config['loss'])
     metrics = get_metric_functions(config['metrics'])
@@ -37,7 +37,6 @@ def main(config, resume, experiment_path):
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger()
 
     parser = argparse.ArgumentParser(description='PyTorch Template')
     arg_group = parser.add_mutually_exclusive_group(required=True)

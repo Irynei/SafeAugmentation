@@ -1,31 +1,40 @@
-from base import BaseModel
-import torch.nn as nn
+from torch import nn
 import torch.nn.functional as F
+import torchvision.models as models
 
 
 def get_model_instance(model_name, **model_params):
     """
-    Get model from config file
+    Get model from config file.
+    Supports models from torchvision module.
+    Example:
+        get_model_instance('resnet101', num_classes=10)
     """
     try:
-        model = eval(model_name)
-    except NameError:
-        raise NameError("Model '{model_name}' not found.".format(model_name=model_name))
+        if model_name == 'VGG16_32x32':
+            model = VGG16_32x32
+        elif model_name == 'MnistModel':
+            model = MnistModel
+        else:
+            # get model from torchvision
+            model = getattr(models, model_name)
+
+    except AttributeError:
+        raise AttributeError("Model '{model_name}' not found".format(model_name=model_name))
 
     model_instance = model(**model_params)
-
     return model_instance
 
 
-class MnistModel(BaseModel):
-    def __init__(self, output_size):
+class MnistModel(nn.Module):
+    def __init__(self, num_classes):
         super(MnistModel, self).__init__()
-        self.output_size = output_size
+        self.num_classes = num_classes
         self.conv1 = nn.Conv2d(1, 10, kernel_size=5)
         self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
         self.conv2_drop = nn.Dropout2d()
         self.fc1 = nn.Linear(320, 50)
-        self.fc2 = nn.Linear(50, self.output_size)
+        self.fc2 = nn.Linear(50, self.num_classes)
 
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
@@ -37,12 +46,13 @@ class MnistModel(BaseModel):
         return x
 
 
-class VGG16(BaseModel):
-    def __init__(self, output_size):
-        super(VGG16, self).__init__()
+class VGG16_32x32(nn.Module):
+    """ VGG16 that works with 32x32 input """
+    def __init__(self, num_classes):
+        super(VGG16_32x32, self).__init__()
         self.layers = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
         self.features = self._make_layers(self.layers)
-        self.classifier = nn.Linear(512, output_size)
+        self.classifier = nn.Linear(512, num_classes)
 
     def forward(self, x):
         out = self.features(x)
