@@ -18,7 +18,7 @@ from albumentations import (
     Blur,
 )
 
-__all__ = ['get_strong_augmentations', 'get_medium_augmentations_augmentations', 'get_light_augmentations']
+__all__ = ['get_strong_augmentations', 'get_medium_augmentations', 'get_light_augmentations']
 
 
 def get_strong_augmentations(width, height):
