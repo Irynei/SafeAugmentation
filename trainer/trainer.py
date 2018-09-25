@@ -23,7 +23,7 @@ class Trainer(BaseTrainer):
 
     def _to_tensor(self, data, target):
         """
-        Convert to tensors. Handle GPU is applicable
+         Handle GPU is applicable
         Args:
             data: batch of training data
             target: batch of labels
@@ -31,7 +31,6 @@ class Trainer(BaseTrainer):
         Returns:
             data, target
         """
-        data, target = torch.FloatTensor(data), torch.FloatTensor(target)
         if self.with_cuda:
             data, target = data.to(self.gpu), target.to(self.gpu)
         return data, target

@@ -1,9 +1,9 @@
 {
-    "experiment_name": "VGG16_on_CIFAR10",
+    "experiment_name": "VGG_16_on_SVHN",
     "cuda": true,
     "gpu": 0,
     "data_loader": {
-        "name": "CIFAR10DataLoader",
+        "name": "SVHNDataLoader",
         "data_dir": "datasets/",
         "batch_size": 32,
         "shuffle": true
