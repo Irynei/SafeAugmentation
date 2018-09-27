@@ -1,23 +1,22 @@
 import os
-
 from torchvision import datasets
-from torchvision.transforms import (
-    RandomVerticalFlip,
-    RandomHorizontalFlip,
-    RandomResizedCrop,
-    CenterCrop,
-    RandomCrop,
-    transforms
+from albumentations import Normalize
+from base import (
+    BaseDataLoader,
+    AutoAugmentDataset
 )
-from base import BaseDataLoader, AutoAugmentDataset
+from augmentations.augmentation import (
+    get_strong_augmentations,
+    get_light_augmentations
+)
 
 
 def get_dataloader_instance(dataloader_name, config):
 
-    if dataloader_name == 'MnistDataLoader':
-        dataloader = MnistDataLoader
-    elif dataloader_name == 'CIFAR10DataLoader':
+    if dataloader_name == 'CIFAR10DataLoader':
         dataloader = CIFAR10DataLoader
+    elif dataloader_name == 'SVHNDataLoader':
+        dataloader = SVHNDataLoader
     else:
         raise NameError("Dataloader '{dataloader}' not found.".format(dataloader=dataloader_name))
 
@@ -26,64 +25,25 @@ def get_dataloader_instance(dataloader_name, config):
     return dataloader_instance
 
 
-class MnistDataLoader(BaseDataLoader):
-    """
-    MNIST data loader
-    """
-    base_transforms = [
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-    ]
-    # TODO add more augmentations. Move to separate file
-    all_augmentations = [
-        RandomVerticalFlip(p=1),
-        RandomHorizontalFlip(p=1),
-        RandomResizedCrop(28),
-        CenterCrop(28)
-    ]
-
-    def __init__(self, config):
-        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'mnist')
-        self.dataset = {
-            'train': AutoAugmentDataset(
-                dataset=datasets.MNIST(self.data_dir, train=True, download=True),
-                base_transforms=self.base_transforms,
-                all_augmentations=self.all_augmentations
-            ),
-            'test': datasets.MNIST(
-                self.data_dir,
-                train=False,
-                download=True,
-                transform=self.base_transforms
-            )
-        }
-        super(MnistDataLoader, self).__init__(self.dataset, config)
-
-
 class CIFAR10DataLoader(BaseDataLoader):
     """
     CIFAR10 data loader
     """
     base_transforms = [
-        transforms.ToTensor(),
-        transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
-    ]
-    # TODO add more augmentations. Move to separate file
-    all_augmentations = [
-        RandomVerticalFlip(p=1),
-        RandomHorizontalFlip(p=1),
-        RandomResizedCrop(32),
-        RandomCrop(32, padding=4),
-        CenterCrop(32)
+        Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
     ]
 
     def __init__(self, config):
+        self.image_size = (32, 32)
+        self.augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
         self.data_dir = os.path.join(config['data_loader']['data_dir'], 'cifar10')
+        self.max_size = int(config['augmentation']['max_size'])
         self.dataset = {
             'train': AutoAugmentDataset(
                 dataset=datasets.CIFAR10(self.data_dir, train=True, download=True),
                 base_transforms=self.base_transforms,
-                all_augmentations=self.all_augmentations
+                augmentations=self.augmentations,
+                max_size=self.max_size
             ),
             'test': datasets.CIFAR10(
                 self.data_dir,
@@ -93,3 +53,33 @@ class CIFAR10DataLoader(BaseDataLoader):
             )
         }
         super(CIFAR10DataLoader, self).__init__(self.dataset, config)
+
+
+class SVHNDataLoader(BaseDataLoader):
+    """
+    SVHN data loader
+    """
+    base_transforms = [
+        Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])
+    ]
+
+    def __init__(self, config):
+        self.image_size = (32, 32)
+        self.augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'SVHN')
+        self.max_size = int(config['augmentation']['max_size'])
+        self.dataset = {
+            'train': AutoAugmentDataset(
+                dataset=datasets.SVHN(self.data_dir, split='train', download=True),
+                base_transforms=self.base_transforms,
+                augmentations=self.augmentations,
+                max_size=self.max_size
+            ),
+            'test': datasets.SVHN(
+                self.data_dir,
+                split='test',
+                download=True,
+                transform=self.base_transforms
+            )
+        }
+        super(SVHNDataLoader, self).__init__(self.dataset, config)

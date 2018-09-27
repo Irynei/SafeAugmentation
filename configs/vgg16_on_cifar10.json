@@ -2,6 +2,9 @@
     "experiment_name": "VGG16_on_CIFAR10",
     "cuda": true,
     "gpu": 0,
+    "augmentation": {
+        "max_size": 5
+    },
     "data_loader": {
         "name": "CIFAR10DataLoader",
         "data_dir": "datasets/",
@@ -10,7 +13,7 @@
     },
     "model_name": "VGG16_32x32",
     "model_params": {
-        "num_classes": 5
+        "num_classes": 15
     },
     "optimizer_type": "Adam",
     "optimizer_params": {

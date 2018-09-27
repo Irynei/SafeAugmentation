@@ -1,16 +1,19 @@
 {
-    "experiment_name": "LeNet on MNIST",
+    "experiment_name": "VGG_16_on_SVHN",
     "cuda": true,
     "gpu": 0,
+    "augmentation": {
+        "max_size": 5
+    },
     "data_loader": {
-        "name": "MnistDataLoader",
+        "name": "SVHNDataLoader",
         "data_dir": "datasets/",
         "batch_size": 32,
         "shuffle": true
     },
-    "model_name": "MnistModel",
+    "model_name": "VGG16_32x32",
     "model_params": {
-        "num_classes": 4
+        "num_classes": 15
     },
     "optimizer_type": "Adam",
     "optimizer_params": {
@@ -23,15 +26,10 @@
         "shuffle": true
     },
     "lr_scheduler": {
-        "lr_scheduler_type": "ExponentialLR",
-        "lr_scheduler_freq": 1,
-        "additional_params": {
-            "gamma": 0.8685113737513527
-        }
     },
     "metrics": [],
     "trainer": {
-        "epochs": 5,
+        "epochs": 10,
         "save_dir": "experiments/",
         "save_freq": 1,
         "verbosity": 2,
