@@ -13,9 +13,7 @@ from augmentations.augmentation import (
 
 def get_dataloader_instance(dataloader_name, config):
 
-    if dataloader_name == 'MnistDataLoader':
-        dataloader = MnistDataLoader
-    elif dataloader_name == 'CIFAR10DataLoader':
+    if dataloader_name == 'CIFAR10DataLoader':
         dataloader = CIFAR10DataLoader
     elif dataloader_name == 'SVHNDataLoader':
         dataloader = SVHNDataLoader
@@ -25,36 +23,6 @@ def get_dataloader_instance(dataloader_name, config):
     dataloader_instance = dataloader(config)
 
     return dataloader_instance
-
-
-class MnistDataLoader(BaseDataLoader):
-    """
-    MNIST data loader
-    """
-    base_transforms = [
-        Normalize((0.1307,), (0.3081,))
-    ]
-
-    def __init__(self, config):
-        self.image_size = (32, 32)
-        self.augmentations = get_light_augmentations(width=self.image_size[0], height=self.image_size[1])
-        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'mnist')
-        self.max_size = int(config['augmentation']['max_size'])
-        self.dataset = {
-            'train': AutoAugmentDataset(
-                dataset=datasets.MNIST(self.data_dir, train=True, download=True),
-                base_transforms=self.base_transforms,
-                augmentations=self.augmentations,
-                max_size=self.max_size
-            ),
-            'test': datasets.MNIST(
-                self.data_dir,
-                train=False,
-                download=True,
-                transform=self.base_transforms
-            )
-        }
-        super(MnistDataLoader, self).__init__(self.dataset, config)
 
 
 class CIFAR10DataLoader(BaseDataLoader):
