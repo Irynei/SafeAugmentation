@@ -2,6 +2,9 @@
     "experiment_name": "VGG_16_on_SVHN",
     "cuda": true,
     "gpu": 0,
+    "augmentation": {
+        "max_size": 7
+    },
     "data_loader": {
         "name": "SVHNDataLoader",
         "data_dir": "datasets/",

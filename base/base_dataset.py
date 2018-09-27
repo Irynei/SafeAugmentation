@@ -7,13 +7,14 @@ from torchvision.transforms.functional import to_tensor
 
 class AutoAugmentDataset(data.Dataset):
     """
-    Randomly applies subset of all_augmentations and set them as labels
+    Randomly applies subset of augmentations and set them as labels
 
     """
-    def __init__(self, dataset, base_transforms, augmentations):
+    def __init__(self, dataset, base_transforms, augmentations, max_size=7):
         self.dataset = dataset
         self.base_transforms = base_transforms
         self.augmentations = augmentations
+        self.max_size = max_size
 
     def __getitem__(self, index):
         x, y = self.dataset[index]
@@ -41,13 +42,14 @@ class AutoAugmentDataset(data.Dataset):
 
         """
         all_transforms_size = len(self.augmentations)
-        subset_transforms = []
 
-        # size from 1 to all_transforms_size - 1
-        subset_size = np.random.randint(1, all_transforms_size)
-        transform_idx = np.random.choice(all_transforms_size, subset_size)
-        for i in transform_idx:
-            subset_transforms.append(self.augmentations[i])
+        # size from 0 to max_size - 1
+        subset_size = np.random.randint(0, self.max_size)
+        all_transforms_idx = np.arange(all_transforms_size)
+        # get random subset without duplicates
+        np.random.shuffle(all_transforms_idx)
+        transform_idx = all_transforms_idx[:subset_size]
+        subset_transforms = [self.augmentations[i] for i in transform_idx]
 
         labels = np.zeros(all_transforms_size)
         labels[transform_idx] = 1

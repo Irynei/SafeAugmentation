@@ -2,6 +2,9 @@
     "experiment_name": "LeNet on MNIST",
     "cuda": true,
     "gpu": 0,
+    "augmentation": {
+        "max_size": 7
+    },
     "data_loader": {
         "name": "MnistDataLoader",
         "data_dir": "datasets/",
