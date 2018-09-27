@@ -39,11 +39,13 @@ class MnistDataLoader(BaseDataLoader):
         self.image_size = (32, 32)
         self.augmentations = get_light_augmentations(width=self.image_size[0], height=self.image_size[1])
         self.data_dir = os.path.join(config['data_loader']['data_dir'], 'mnist')
+        self.max_size = int(config['augmentation']['max_size'])
         self.dataset = {
             'train': AutoAugmentDataset(
                 dataset=datasets.MNIST(self.data_dir, train=True, download=True),
                 base_transforms=self.base_transforms,
-                augmentations=self.augmentations
+                augmentations=self.augmentations,
+                max_size=self.max_size
             ),
             'test': datasets.MNIST(
                 self.data_dir,
@@ -67,11 +69,13 @@ class CIFAR10DataLoader(BaseDataLoader):
         self.image_size = (32, 32)
         self.augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
         self.data_dir = os.path.join(config['data_loader']['data_dir'], 'cifar10')
+        self.max_size = int(config['augmentation']['max_size'])
         self.dataset = {
             'train': AutoAugmentDataset(
                 dataset=datasets.CIFAR10(self.data_dir, train=True, download=True),
                 base_transforms=self.base_transforms,
-                augmentations=self.augmentations
+                augmentations=self.augmentations,
+                max_size=self.max_size
             ),
             'test': datasets.CIFAR10(
                 self.data_dir,
@@ -95,11 +99,13 @@ class SVHNDataLoader(BaseDataLoader):
         self.image_size = (32, 32)
         self.augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
         self.data_dir = os.path.join(config['data_loader']['data_dir'], 'SVHN')
+        self.max_size = int(config['augmentation']['max_size'])
         self.dataset = {
             'train': AutoAugmentDataset(
                 dataset=datasets.SVHN(self.data_dir, split='train', download=True),
                 base_transforms=self.base_transforms,
-                augmentations=self.augmentations
+                augmentations=self.augmentations,
+                max_size=self.max_size
             ),
             'test': datasets.SVHN(
                 self.data_dir,
