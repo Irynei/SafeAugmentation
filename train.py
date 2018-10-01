@@ -1,6 +1,7 @@
 import os
 import json
 import torch
+import logging
 import argparse
 import glog as log
 from model.model import get_model_instance
@@ -9,7 +10,7 @@ from model.metric import get_metric_functions
 from data_loaders import get_dataloader_instance
 from logger import Logger
 from trainer import Trainer
-from utils.util import log_model_summary
+from utils.util import log_model_summary, ensure_dir
 
 log.setLevel("INFO")
 
@@ -30,6 +31,7 @@ def main(config, resume, experiment_path):
                       resume=resume,
                       config=config,
                       data_loader=data_loader,
+                      experiment_path=experiment_path,
                       valid_data_loader=valid_data_loader,
                       train_logger=train_logger)
 
@@ -54,5 +56,10 @@ if __name__ == '__main__':
         config = json.load(open(args.config))
         experiment_path = os.path.join(config['trainer']['save_dir'], config['experiment_name'])
         assert not os.path.exists(experiment_path), "Path {} already exists!".format(experiment_path)
+
+    ensure_dir(experiment_path)
+    # store logs in a file
+    log_file = os.path.join(experiment_path, 'train_logs.txt')
+    log.logger.addHandler(logging.FileHandler(log_file))
 
     main(config, args.resume, experiment_path)

@@ -3,14 +3,13 @@ import math
 import torch
 import glog as log
 import torch.optim as optim
-from utils.util import ensure_dir
 
 
 class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, resume, config, train_logger=None):
+    def __init__(self, model, loss, metrics, resume, config, experiment_path, train_logger=None):
 
         # training params
         self.model = model
@@ -52,8 +51,7 @@ class BaseTrainer:
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
 
         self.start_epoch = 1
-        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], self.experiment_name)
-        ensure_dir(self.checkpoint_dir)
+        self.checkpoint_dir = experiment_path
         if resume:
             self._resume_checkpoint(resume)
 
