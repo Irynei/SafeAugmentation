@@ -27,9 +27,9 @@
     },
     "lr_scheduler": {
     },
-    "metrics": [],
+    "metrics": ["accuracy"],
     "trainer": {
-        "epochs": 10,
+        "epochs": 50,
         "save_dir": "experiments/",
         "save_freq": 1,
         "verbosity": 2,
