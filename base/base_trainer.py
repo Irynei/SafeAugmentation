@@ -9,7 +9,7 @@ class BaseTrainer:
     """
     Base class for all trainers
     """
-    def __init__(self, model, loss, metrics, resume, config, experiment_path, train_logger=None):
+    def __init__(self, model, loss, metrics, resume, config, train_logger=None):
 
         # training params
         self.model = model
@@ -51,7 +51,7 @@ class BaseTrainer:
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
 
         self.start_epoch = 1
-        self.checkpoint_dir = experiment_path
+        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], config['experiment_name'])
         if resume:
             self._resume_checkpoint(resume)
 

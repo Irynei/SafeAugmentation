@@ -12,8 +12,8 @@ class Trainer(BaseTrainer):
         self.optimizer is by default handled by BaseTrainer based on config.
     """
     def __init__(self, model, loss, metrics, resume, config,
-                 data_loader, experiment_path, valid_data_loader=None, train_logger=None):
-        super(Trainer, self).__init__(model, loss, metrics, resume, config, experiment_path, train_logger)
+                 data_loader, valid_data_loader=None, train_logger=None):
+        super(Trainer, self).__init__(model, loss, metrics, resume, config, train_logger)
         self.config = config
         self.data_loader = data_loader
         self.batch_size = data_loader.batch_size

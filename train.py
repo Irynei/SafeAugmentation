@@ -30,7 +30,6 @@ def main(config, resume, experiment_path):
                       resume=resume,
                       config=config,
                       data_loader=data_loader,
-                      experiment_path=experiment_path,
                       valid_data_loader=valid_data_loader,
                       train_logger=train_logger)
 
