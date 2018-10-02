@@ -3,7 +3,6 @@ import math
 import torch
 import glog as log
 import torch.optim as optim
-from utils.util import ensure_dir
 
 
 class BaseTrainer:
@@ -52,8 +51,7 @@ class BaseTrainer:
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
 
         self.start_epoch = 1
-        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], self.experiment_name)
-        ensure_dir(self.checkpoint_dir)
+        self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], config['experiment_name'])
         if resume:
             self._resume_checkpoint(resume)
 

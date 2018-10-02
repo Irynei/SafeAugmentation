@@ -7,7 +7,6 @@ from base import (
 )
 from augmentations.augmentation import (
     get_strong_augmentations,
-    get_light_augmentations
 )
 
 

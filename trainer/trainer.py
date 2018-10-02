@@ -49,7 +49,7 @@ class Trainer(BaseTrainer):
         output = output.cpu().data.numpy()
         target = target.cpu().data.numpy()
         # TODO take maximum is wrong with multi-label classification
-        output = np.argmax(output, axis=1)
+        # output = np.argmax(output, axis=1)
         for i, metric in enumerate(self.metrics):
             acc_metrics[i] += metric(output, target)
         return acc_metrics
@@ -78,15 +78,19 @@ class Trainer(BaseTrainer):
 
             self.optimizer.step()
             losses.append(loss.data.mean())
-            total_metrics += self._eval_metrics(output, target)
+            accuracy_metrics = self._eval_metrics(output, target)
+            total_metrics += accuracy_metrics
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
-                self.logger.info('Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f}'.format(
-                    epoch,
-                    batch_idx * self.data_loader.batch_size,
-                    len(self.data_loader) * self.data_loader.batch_size,
-                    100.0 * batch_idx / len(self.data_loader),
-                    loss.data.mean())
+                self.logger.info(
+                    'Train Epoch: {} [{}/{} ({:.0f}%)] Loss: {:.6f} Accuracy: {:.6f}'.format(
+                        epoch,
+                        batch_idx * self.data_loader.batch_size,
+                        len(self.data_loader) * self.data_loader.batch_size,
+                        100.0 * batch_idx / len(self.data_loader),
+                        loss.data.mean(),
+                        accuracy_metrics[0] if len(accuracy_metrics) else 0
+                    )
                 )
 
         log = {

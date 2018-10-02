@@ -9,7 +9,7 @@ from model.metric import get_metric_functions
 from data_loaders import get_dataloader_instance
 from logger import Logger
 from trainer import Trainer
-from utils.util import log_model_summary
+from utils.util import log_model_summary, ensure_dir
 
 log.setLevel("INFO")
 
@@ -54,5 +54,10 @@ if __name__ == '__main__':
         config = json.load(open(args.config))
         experiment_path = os.path.join(config['trainer']['save_dir'], config['experiment_name'])
         assert not os.path.exists(experiment_path), "Path {} already exists!".format(experiment_path)
+
+    ensure_dir(experiment_path)
+    # store logs in a file
+    log_file = os.path.join(experiment_path, 'train_logs.txt')
+    log.logger.addHandler(log.logging.FileHandler(log_file))
 
     main(config, args.resume, experiment_path)
