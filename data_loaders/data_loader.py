@@ -42,13 +42,14 @@ class CIFAR10DataLoader(BaseDataLoader):
                 dataset=datasets.CIFAR10(self.data_dir, train=True, download=True),
                 base_transforms=self.base_transforms,
                 augmentations=self.augmentations,
-                max_size=self.max_size
+                max_size=self.max_size,
+                train=True
             ),
-            'test': datasets.CIFAR10(
-                self.data_dir,
-                train=False,
-                download=True,
-                transform=self.base_transforms
+            'test': AutoAugmentDataset(
+                dataset=datasets.CIFAR10(self.data_dir, train=False, download=True),
+                base_transforms=self.base_transforms,
+                augmentations=self.augmentations,
+                train=False
             )
         }
         super(CIFAR10DataLoader, self).__init__(self.dataset, config)
@@ -74,11 +75,11 @@ class SVHNDataLoader(BaseDataLoader):
                 augmentations=self.augmentations,
                 max_size=self.max_size
             ),
-            'test': datasets.SVHN(
-                self.data_dir,
-                split='test',
-                download=True,
-                transform=self.base_transforms
+            'test': AutoAugmentDataset(
+                dataset=datasets.SVHN(self.data_dir, split='test', download=True),
+                base_transforms=self.base_transforms,
+                augmentations=self.augmentations,
+                train=False
             )
         }
         super(SVHNDataLoader, self).__init__(self.dataset, config)
