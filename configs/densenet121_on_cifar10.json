@@ -28,6 +28,7 @@
     },
     "lr_scheduler": {
         "lr_scheduler_type": "ReduceLROnPlateau",
+        "lr_scheduler_freq": 1,
         "additional_params": {
             "patience": 8,
             "mode": "min",
