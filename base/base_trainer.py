@@ -3,6 +3,7 @@ import math
 import torch
 import glog as log
 import torch.optim as optim
+from utils.util import EarlyStopping
 
 
 class BaseTrainer:
@@ -50,6 +51,10 @@ class BaseTrainer:
         assert self.monitor_mode == 'min' or self.monitor_mode == 'max'
         self.monitor_best = math.inf if self.monitor_mode == 'min' else -math.inf
 
+        self.early_stopping = None
+        if config.get('early_stopping'):
+            self.early_stopping = EarlyStopping(**config['early_stopping']['early_stopping_params'])
+
         self.start_epoch = 1
         self.checkpoint_dir = os.path.join(config['trainer']['save_dir'], config['experiment_name'])
         if resume:
@@ -93,9 +98,16 @@ class BaseTrainer:
 
             # lr_scheduler logic
             if self.lr_scheduler and epoch % self.lr_scheduler_freq == 0:
-                self.lr_scheduler.step(epoch)
-                lr = self.lr_scheduler.get_lr()[0]
-                self.logger.info('New Learning Rate: {:.6f}'.format(lr))
+                if isinstance(self.lr_scheduler, optim.lr_scheduler.ReduceLROnPlateau):
+                    self.lr_scheduler.step(log['val_loss'])
+                else:
+                    self.lr_scheduler.step(epoch)
+
+            # stopping early logic
+            if self.early_stopping:
+                stop_early = self.early_stopping.step(log['val_loss'])
+                if stop_early:
+                    break
 
     def _train_epoch(self, epoch):
         """

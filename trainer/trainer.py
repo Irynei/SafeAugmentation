@@ -12,12 +12,13 @@ class Trainer(BaseTrainer):
         self.optimizer is by default handled by BaseTrainer based on config.
     """
     def __init__(self, model, loss, metrics, resume, config,
-                 data_loader, valid_data_loader=None, train_logger=None):
+                 data_loader, valid_data_loader=None, test_data_loader=None, train_logger=None):
         super(Trainer, self).__init__(model, loss, metrics, resume, config, train_logger)
         self.config = config
         self.data_loader = data_loader
         self.batch_size = data_loader.batch_size
         self.valid_data_loader = valid_data_loader
+        self.test_data_loader = test_data_loader
         self.do_validation = self.valid_data_loader is not None
         self.log_step = int(np.sqrt(self.batch_size))
 
@@ -129,3 +130,43 @@ class Trainer(BaseTrainer):
             'val_loss': float(np.mean(val_losses)),
             'val_metrics': (total_val_metrics / len(self.valid_data_loader)).tolist()
         }
+
+    def test(self):
+        """
+        Test logic.
+
+        Test is performed on data without augmentations.
+
+        """
+        self.model.eval()
+        test_losses = []
+        total_test_metrics = np.zeros(len(self.metrics))
+        false_positives = np.zeros(self.model.classifier.out_features)
+        with torch.no_grad():
+            for batch_idx, (data, target) in enumerate(self.test_data_loader):
+                data, target = self._to_tensor(data, target)
+
+                output = self.model(data)
+                # Todo make threshold configurable
+                false_positives += (output.data.numpy() > 0.5).sum(axis=0)
+                loss = self.loss(output, target)
+
+                test_losses.append(loss.data.mean())
+                accuracy_metrics = self._eval_metrics(output, target)
+                total_test_metrics += accuracy_metrics
+
+                self.logger.info(
+                    'Test: [{}/{} ({:.0f}%)] Loss: {:.6f} Accuracy: {:.6f}'.format(
+                        batch_idx * self.test_data_loader.batch_size,
+                        len(self.test_data_loader) * self.test_data_loader.batch_size,
+                        100.0 * batch_idx / len(self.test_data_loader),
+                        loss.data.mean(),
+                        accuracy_metrics[0] if len(accuracy_metrics) else 0
+                    )
+                )
+
+        self.logger.info("Total test Loss: {:.6f} Accuracy: {:.6f}".format(
+            float(np.mean(test_losses)),
+            (total_test_metrics / len(self.test_data_loader)).tolist()[0]
+        ))
+        self.logger.info("Test False Positives: {}".format(false_positives))
