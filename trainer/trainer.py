@@ -49,8 +49,6 @@ class Trainer(BaseTrainer):
         acc_metrics = np.zeros(len(self.metrics))
         output = output.cpu().data.numpy()
         target = target.cpu().data.numpy()
-        # TODO take maximum is wrong with multi-label classification
-        # output = np.argmax(output, axis=1)
         for i, metric in enumerate(self.metrics):
             acc_metrics[i] += metric(output, target)
         return acc_metrics
@@ -79,6 +77,8 @@ class Trainer(BaseTrainer):
 
             self.optimizer.step()
             losses.append(loss.data.mean())
+
+            output = torch.sigmoid(output)
             accuracy_metrics = self._eval_metrics(output, target)
             total_metrics += accuracy_metrics
 
@@ -141,17 +141,21 @@ class Trainer(BaseTrainer):
         self.model.eval()
         test_losses = []
         total_test_metrics = np.zeros(len(self.metrics))
-        false_positives = np.zeros(self.model.classifier.out_features)
+        false_positives = np.zeros(self.config['model_params']['num_classes'])
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.test_data_loader):
                 data, target = self._to_tensor(data, target)
 
                 output = self.model(data)
-                # Todo make threshold configurable
-                false_positives += (output.data.numpy() > 0.5).sum(axis=0)
+
                 loss = self.loss(output, target)
 
                 test_losses.append(loss.data.mean())
+
+                output = torch.sigmoid(output)
+                # TODO make threshold configurable
+                false_positives += (output.data.numpy() > 0.5).sum(axis=0)
+
                 accuracy_metrics = self._eval_metrics(output, target)
                 total_test_metrics += accuracy_metrics
 
