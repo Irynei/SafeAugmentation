@@ -43,7 +43,7 @@
             "mode": "min"
         }
     },
-    "metrics": ["accuracy"],
+    "metrics": ["accuracy", "jaccard_similarity"],
     "trainer": {
         "epochs": 500,
         "save_dir": "experiments/",
