@@ -49,6 +49,7 @@ class Trainer(BaseTrainer):
         acc_metrics = np.zeros(len(self.metrics))
         output = output.cpu().data.numpy()
         target = target.cpu().data.numpy()
+        output = np.argmax(output, axis=1)
         for i, metric in enumerate(self.metrics):
             acc_metrics[i] += metric(output, target)
         return acc_metrics
@@ -77,8 +78,8 @@ class Trainer(BaseTrainer):
 
             self.optimizer.step()
             losses.append(loss.data.mean())
-
-            output = torch.sigmoid(output)
+            
+            # output = torch.sigmoid(output)
             accuracy_metrics = self._eval_metrics(output, target)
             total_metrics += accuracy_metrics
 
@@ -141,6 +142,9 @@ class Trainer(BaseTrainer):
         self.model.eval()
         test_losses = []
         total_test_metrics = np.zeros(len(self.metrics))
+        per_class_accuracy = np.zeros(15)
+        total_targets = np.zeros(15)
+        true_positives = np.zeros(15)
         false_positives = np.zeros(self.config['model_params']['num_classes'])
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.test_data_loader):
@@ -154,18 +158,27 @@ class Trainer(BaseTrainer):
 
                 output = torch.sigmoid(output)
                 # TODO make threshold configurable
-                false_positives += (output.data.numpy() > 0.5).sum(axis=0)
+                predicted = (output.cpu().data.numpy() > 0.5)
+                false_positives += predicted.sum(axis=0)
+
+                per_class_batch = (predicted == target).sum(0).type(torch.DoubleTensor) / self.batch_size
+                per_class_accuracy += per_class_batch
+                
+                true_positives += np.logical_and(predicted, target).sum(0)
+                total_targets += target.sum(0)
 
                 accuracy_metrics = self._eval_metrics(output, target)
                 total_test_metrics += accuracy_metrics
 
                 self.logger.info(
-                    'Test: [{}/{} ({:.0f}%)] Loss: {:.6f} Accuracy: {:.6f}'.format(
+                    'Test: [{}/{} ({:.0f}%)] Loss: {:.6f} Accuracy: {:.6f} Jaccard Score: {:.6f} PerClassAcc {}'.format(
                         batch_idx * self.test_data_loader.batch_size,
                         len(self.test_data_loader) * self.test_data_loader.batch_size,
                         100.0 * batch_idx / len(self.test_data_loader),
                         loss.data.mean(),
-                        accuracy_metrics[0] if len(accuracy_metrics) else 0
+                        accuracy_metrics[0] if len(accuracy_metrics) else 0,
+                        accuracy_metrics[1] if len(accuracy_metrics) else 0,
+                        per_class_batch
                     )
                 )
 
@@ -174,3 +187,6 @@ class Trainer(BaseTrainer):
             (total_test_metrics / len(self.test_data_loader)).tolist()[0]
         ))
         self.logger.info("Test False Positives: {}".format(false_positives))
+        self.logger.info("Per Class Accuracy: {}".format((per_class_accuracy / len(self.test_data_loader)).tolist()))
+        self.logger.info("Labels distribution: {}".format(total_targets))
+        self.logger.info("True positives: {}".format(true_positives))

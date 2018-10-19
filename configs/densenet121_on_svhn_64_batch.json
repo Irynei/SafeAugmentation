@@ -1,12 +1,12 @@
 {
-    "experiment_name": "DenseNet121_on_CIFAR10_500_jaccard_v2",
+    "experiment_name": "DenseNet121_on_SVHN_500_jaccard_64_batch",
     "cuda": true,
     "gpu": 0,
     "augmentation": {
         "max_size": 5
     },
     "data_loader": {
-        "name": "CIFAR10DataLoader",
+        "name": "SVHNDataLoader",
         "data_dir": "datasets/",
         "batch_size": 64,
         "shuffle": true

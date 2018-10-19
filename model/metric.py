@@ -37,7 +37,7 @@ def accuracy(preds, targs, threshold=0.5):
         threshold: threshold, default is 0.5
 
     """
-    return accuracy_score(targs, (preds > threshold))
+    return accuracy_score(targs, preds)
 
 
 def f_beta(preds, targs, threshold=0.5, beta=2):

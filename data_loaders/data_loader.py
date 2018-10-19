@@ -3,7 +3,8 @@ from torchvision import datasets
 from albumentations import Normalize
 from base import (
     BaseDataLoader,
-    AutoAugmentDataset
+    AutoAugmentDataset,
+    AlbumentationsDataset
 )
 from augmentations.augmentation import (
     get_strong_augmentations,
@@ -16,12 +17,48 @@ def get_dataloader_instance(dataloader_name, config):
         dataloader = CIFAR10DataLoader
     elif dataloader_name == 'SVHNDataLoader':
         dataloader = SVHNDataLoader
+    elif dataloader_name == 'CIFAR10DataLoaderImageClassification':
+        dataloader = CIFAR10DataLoaderImageClassification
     else:
         raise NameError("Dataloader '{dataloader}' not found.".format(dataloader=dataloader_name))
 
     dataloader_instance = dataloader(config)
 
     return dataloader_instance
+
+
+class CIFAR10DataLoaderImageClassification(BaseDataLoader):
+    """
+    CIFAR10 data loader
+    """
+    base_transforms = [
+        Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+    ]
+
+    def __init__(self, config):
+        self.image_size = (32, 32)
+        augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'cifar10')
+        self.augm_index = int(config['augmentation']['index'])
+        try:
+            self.augmentations = [augmentations[self.augm_index]]
+        except IndexError:
+            self.augmentations = []
+        self.dataset = {
+            'train': AlbumentationsDataset(
+                dataset=datasets.CIFAR10(self.data_dir, train=True, download=True),
+                base_transforms=self.base_transforms,
+                augmentations=self.augmentations,
+            ),
+            'test': AlbumentationsDataset(
+                dataset=datasets.CIFAR10(self.data_dir, train=False, download=True),
+                base_transforms=self.base_transforms,
+                augmentations=self.augmentations,
+            )
+        }
+        super(CIFAR10DataLoaderImageClassification, self).__init__(self.dataset, config)
+
+
 
 
 class CIFAR10DataLoader(BaseDataLoader):
@@ -49,7 +86,7 @@ class CIFAR10DataLoader(BaseDataLoader):
                 dataset=datasets.CIFAR10(self.data_dir, train=False, download=True),
                 base_transforms=self.base_transforms,
                 augmentations=self.augmentations,
-                train=False
+                train=True
             )
         }
         super(CIFAR10DataLoader, self).__init__(self.dataset, config)
@@ -79,7 +116,7 @@ class SVHNDataLoader(BaseDataLoader):
                 dataset=datasets.SVHN(self.data_dir, split='test', download=True),
                 base_transforms=self.base_transforms,
                 augmentations=self.augmentations,
-                train=False
+                train=True
             )
         }
         super(SVHNDataLoader, self).__init__(self.dataset, config)

@@ -30,7 +30,7 @@ class BaseTrainer:
         if config['cuda'] and not torch.cuda.is_available():
             self.logger.warning('Warning: There\'s no CUDA support on this machine, '
                                 'training is performed on CPU.')
-        else:
+        elif self.with_cuda:
             self.gpu = torch.device('cuda:' + str(config['gpu']))
             self.model = self.model.to(self.gpu)
 

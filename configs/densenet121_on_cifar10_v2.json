@@ -1,5 +1,5 @@
 {
-    "experiment_name": "DenseNet121_on_CIFAR10_500_jaccard_v2",
+    "experiment_name": "test",
     "cuda": true,
     "gpu": 0,
     "augmentation": {
@@ -8,7 +8,7 @@
     "data_loader": {
         "name": "CIFAR10DataLoader",
         "data_dir": "datasets/",
-        "batch_size": 64,
+        "batch_size": 32,
         "shuffle": true
     },
     "model_name": "densenet121_32x32",
@@ -30,7 +30,7 @@
         "lr_scheduler_type": "ReduceLROnPlateau",
         "lr_scheduler_freq": 1,
         "additional_params": {
-            "patience": 10,
+            "patience": 8,
             "mode": "min",
             "min_lr": 1e-9,
             "factor": 0.1,
@@ -39,13 +39,13 @@
     },
     "early_stopping": {
         "early_stopping_params": {
-            "patience": 20,
+            "patience": 12,
             "mode": "min"
         }
     },
     "metrics": ["accuracy", "jaccard_similarity"],
     "trainer": {
-        "epochs": 500,
+        "epochs": 200,
         "save_dir": "experiments/",
         "save_freq": 100,
         "verbosity": 2,

@@ -5,6 +5,35 @@ from albumentations import Compose
 from torchvision.transforms.functional import to_tensor
 
 
+class AlbumentationsDataset(data.Dataset):
+    """
+    Dataset that works with transformations from albumentations lib
+
+    """
+    def __init__(self, dataset, base_transforms, augmentations):
+        self.dataset = dataset
+        self.base_transforms = base_transforms
+        self.augmentations = augmentations
+
+    def __getitem__(self, index):
+        x, y = self.dataset[index]
+
+        trfms = self.augmentations
+        trfms.extend(self.base_transforms)
+        transforms = Compose(trfms)
+
+        image_np = np.array(x)
+        augmented = transforms(image=image_np)
+        x = to_tensor(augmented['image'])
+
+        return x, y
+
+    def __len__(self):
+        return len(self.dataset)
+                                                                                            
+
+
+
 class AutoAugmentDataset(data.Dataset):
     """
     Randomly applies subset of augmentations and set them as labels

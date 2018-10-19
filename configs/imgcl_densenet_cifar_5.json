@@ -1,19 +1,19 @@
 {
-    "experiment_name": "DenseNet121_on_CIFAR10_500_jaccard_v2",
+    "experiment_name": "image_clasf_cifar_augm_ShiftScaleRotate",
     "cuda": true,
     "gpu": 0,
     "augmentation": {
-        "max_size": 5
+        "index": 5
     },
     "data_loader": {
-        "name": "CIFAR10DataLoader",
+        "name": "CIFAR10DataLoaderImageClassification",
         "data_dir": "datasets/",
         "batch_size": 64,
         "shuffle": true
     },
     "model_name": "densenet121_32x32",
     "model_params": {
-        "num_classes": 15
+        "num_classes": 10
     },
     "optimizer_type": "SGD",
     "optimizer_params": {
@@ -21,7 +21,7 @@
         "weight_decay": 0.0005,
         "momentum": 0.9
     },
-    "loss": "MultiLabelSoftMarginLoss",
+    "loss": "CrossEntropyLoss",
     "validation": {
         "validation_split": 0.1,
         "shuffle": true
@@ -43,7 +43,7 @@
             "mode": "min"
         }
     },
-    "metrics": ["accuracy", "jaccard_similarity"],
+    "metrics": ["accuracy"],
     "trainer": {
         "epochs": 500,
         "save_dir": "experiments/",
