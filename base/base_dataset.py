@@ -18,7 +18,7 @@ class AlbumentationsDataset(data.Dataset):
     def __getitem__(self, index):
         x, y = self.dataset[index]
 
-        trfms = self.augmentations
+        trfms = self.augmentations[:]
         trfms.extend(self.base_transforms)
         transforms = Compose(trfms)
 
