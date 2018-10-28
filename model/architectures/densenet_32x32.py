@@ -2,6 +2,28 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.models as torchvision_models
+
+
+def my_densenet121(num_classes):
+    """ densenet121 that works with different input sizes """
+    return MyDensenet(num_init_features=64, growth_rate=32, block_config=(6, 12, 24, 16), num_classes=num_classes)
+
+
+class MyDensenet(torchvision_models.DenseNet):
+    """
+    Torchvision densenet implementation.
+    avg_pool2d is replaced with adaptive_avg_pool2d, because of different input size
+    """
+    def __init__(self, **kwargs):
+        super(MyDensenet, self).__init__(**kwargs)
+
+    def forward(self, x):
+        features = self.features(x)
+        out = F.relu(features, inplace=True)
+        out = F.adaptive_avg_pool2d(out, output_size=(1, 1)).view(features.size(0), -1)
+        out = self.classifier(out)
+        return out
 
 
 def densenet121_32x32(num_classes):
