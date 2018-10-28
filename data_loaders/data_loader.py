@@ -1,6 +1,6 @@
 import os
 from torchvision import datasets
-from albumentations import Normalize
+from albumentations import Normalize, Resize
 from base import (
     BaseDataLoader,
     AutoAugmentDataset
@@ -88,6 +88,7 @@ class SVHNDataLoader(BaseDataLoader):
         super(SVHNDataLoader, self).__init__(self.dataset, config)
 
 
+
 class TinyImageNetDataLoader(BaseDataLoader):
 
     filename = "tiny-imagenet-200.zip"
@@ -99,6 +100,7 @@ class TinyImageNetDataLoader(BaseDataLoader):
     def __init__(self, config):
         self.image_size = (64, 64)
         self.augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
+        self.base_transforms.append(Resize(width=self.image_size[0], height=self.image_size[1]))
         self.data_dir = os.path.join(config['data_loader']['data_dir'], 'tiny_imagenet')
         self.max_size = int(config['augmentation']['max_size'])
         download_and_unzip(self.url, self.filename, self.data_dir)
