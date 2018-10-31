@@ -1,0 +1,54 @@
+{
+    "experiment_name": "image_clasf_tiny_imagenet_augm_RandomCrop",
+    "cuda": true,
+    "gpu": 0,
+    "augmentation": {
+        "index": 6
+    },
+    "data_loader": {
+        "name": "TinyImageNetDataLoaderImageClassification",
+        "data_dir": "datasets/",
+        "batch_size": 256,
+        "shuffle": true
+    },
+    "model_name": "densenet121_32x32",
+    "model_params": {
+        "num_classes": 200
+    },
+    "optimizer_type": "SGD",
+    "optimizer_params": {
+        "lr": 0.1,
+        "weight_decay": 0.0005,
+        "momentum": 0.9
+    },
+    "loss": "CrossEntropyLoss",
+    "validation": {
+        "validation_split": 0
+    },
+    "lr_scheduler": {
+        "lr_scheduler_type": "ReduceLROnPlateau",
+        "lr_scheduler_freq": 1,
+        "additional_params": {
+            "patience": 10,
+            "mode": "min",
+            "min_lr": 1e-9,
+            "factor": 0.1,
+            "verbose": true
+        }
+    },
+    "early_stopping": {
+        "early_stopping_params": {
+            "patience": 20,
+            "mode": "min"
+        }
+    },
+    "metrics": ["accuracy"],
+    "trainer": {
+        "epochs": 500,
+        "save_dir": "experiments/",
+        "save_freq": 100,
+        "verbosity": 2,
+        "monitor": "val_loss",
+        "monitor_mode": "min"
+    }
+}

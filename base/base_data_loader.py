@@ -13,6 +13,7 @@ class BaseDataLoader(DataLoader):
         # train and test datasets
         self.train_dataset = dataset['train']
         self.test_dataset = dataset['test']
+        self.valid_dataset = dataset.get('val')
 
         # train data params
         self.config = config
@@ -70,15 +71,17 @@ class BaseDataLoader(DataLoader):
         
     def get_validation_loader(self):
         """
-        Get validation data loader if validation split
+        Get validation data loader if validation split or separate validation dataset
         Returns:
             validation data loader or None
 
         """
-        if self.valid_sampler is None:
-            return None
-        else:
+        if self.valid_dataset:
+            return DataLoader(dataset=self.valid_dataset, batch_size=self.batch_size)
+        elif self.valid_sampler:
             return DataLoader(sampler=self.valid_sampler, **self.init_kwargs)
+        else:
+            return None
 
     def get_test_loader(self):
         """

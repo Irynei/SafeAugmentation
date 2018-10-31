@@ -1,4 +1,7 @@
 import os
+import urllib.request
+import zipfile
+
 import glog as log
 import numpy as np
 
@@ -14,6 +17,18 @@ def log_model_summary(model, verbose=False):
         params = sum([np.prod(p.size()) for p in model_parameters])
         log.info('Trainable parameters: {}'.format(params))
     log.info(model)
+
+
+def download_and_unzip(url, filename, dest_dir):
+    fpath = os.path.join(dest_dir, filename)
+    if os.path.isfile(fpath):
+        log.info("Files already downloaded")
+        return
+    log.info("Downloading " + filename + " to " + dest_dir)
+    os.makedirs(dest_dir)
+    urllib.request.urlretrieve(url, fpath)
+    with zipfile.ZipFile(fpath) as zf:
+        zf.extractall(dest_dir)
 
 
 class EarlyStopping:
