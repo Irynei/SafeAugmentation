@@ -24,21 +24,21 @@ __all__ = ['get_strong_augmentations', 'get_medium_augmentations', 'get_light_au
 def get_strong_augmentations(width, height):
     # TODO maybe consider more augmentations and play with params
     return [
-        HorizontalFlip(p=0.5),
-        VerticalFlip(p=0.5),
-        RandomRotate90(p=0.5),
-        Transpose(p=0.5),
-        ToGray(p=0.5),
-        ShiftScaleRotate(p=0.5),
-        RandomCrop(height, width, p=0.5),
-        CenterCrop(height, width, p=0.5),
-        RandomSizedCrop((height - 6, height - 2), height, width, p=0.5),
-        RandomContrast(p=0.5),
-        RandomBrightness(p=0.5),
-        RandomGamma(p=0.5),
-        CLAHE(p=0.5),
-        Blur(blur_limit=3, p=0.5),
-        GaussNoise(p=0.5)
+        HorizontalFlip(p=1),
+        VerticalFlip(p=1),
+        RandomRotate90(p=1),
+        Transpose(p=1),
+        ToGray(p=1),
+        ShiftScaleRotate(p=1),
+        RandomCrop(height-14, width-14, p=1),
+        CenterCrop(height-14, width-14, p=1),
+        RandomSizedCrop((height - 14, height - 14), height, width, p=1),
+        RandomContrast(p=1),
+        RandomBrightness(p=1),
+        RandomGamma(p=1),
+        CLAHE(p=1),
+        Blur(blur_limit=3, p=1),
+        GaussNoise(p=1)
     ]
 
 

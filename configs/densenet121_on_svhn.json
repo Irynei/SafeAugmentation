@@ -1,17 +1,17 @@
 {
-    "experiment_name": "DenseNet121_on_SVHN_500_jaccard",
+    "experiment_name": "DenseNet_121_on_tiny_ImageNet",
     "cuda": true,
     "gpu": 0,
     "augmentation": {
         "max_size": 5
     },
     "data_loader": {
-        "name": "SVHNDataLoader",
+        "name": "TinyImageNetDataLoader",
         "data_dir": "datasets/",
         "batch_size": 32,
         "shuffle": true
     },
-    "model_name": "densenet121_32x32",
+    "model_name": "my_densenet121",
     "model_params": {
         "num_classes": 15
     },
@@ -23,8 +23,7 @@
     },
     "loss": "MultiLabelSoftMarginLoss",
     "validation": {
-        "validation_split": 0.1,
-        "shuffle": true
+        "validation_split": 0.0
     },
     "lr_scheduler": {
         "lr_scheduler_type": "ReduceLROnPlateau",
