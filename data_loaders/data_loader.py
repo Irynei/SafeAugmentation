@@ -115,6 +115,7 @@ class TinyImageNetDataLoader(BaseDataLoader):
                 dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/val')),
                 base_transforms=self.base_transforms,
                 augmentations=self.augmentations,
+                max_size=self.max_size
             ),
             'test': AutoAugmentDataset(
                 dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/test')),
