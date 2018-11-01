@@ -8,10 +8,10 @@
     "data_loader": {
         "name": "TinyImageNetDataLoaderImageClassification",
         "data_dir": "datasets/",
-        "batch_size": 16,
+        "batch_size": 256,
         "shuffle": true
     },
-    "model_name": "densenet121_32x32",
+    "model_name": "my_densenet121",
     "model_params": {
         "num_classes": 200
     },
