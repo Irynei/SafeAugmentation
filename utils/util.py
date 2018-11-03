@@ -31,6 +31,32 @@ def download_and_unzip(url, filename, dest_dir):
         zf.extractall(dest_dir)
 
 
+def create_val_folder(data_dir):
+    """
+    Arrange Tiny ImageNet validation images into ImageFolder-like format
+    """
+    path = os.path.join(data_dir, 'val/images')  # path where validation data is present now
+    filename = os.path.join(data_dir, 'val/val_annotations.txt')  # file where image2class mapping is present
+    fp = open(filename, "r")  # open file in read mode
+    data = fp.readlines()  # read line by line
+
+    # Create a dictionary with image names as key and corresponding classes as values
+    val_img_dict = {}
+    for line in data:
+        words = line.split("\t")
+        val_img_dict[words[0]] = words[1]
+    fp.close()
+
+    # Create folder if not present, and move image into proper folder
+    for img, folder in val_img_dict.items():
+        newpath = (os.path.join(path, folder))
+        if not os.path.exists(newpath):  # check if folder exists
+            os.makedirs(newpath)
+
+        if os.path.exists(os.path.join(path, img)):  # Check if image exists in default directory
+            os.rename(os.path.join(path, img), os.path.join(newpath, img))
+
+
 class EarlyStopping:
     def __init__(self, mode='min', min_delta=0, patience=10):
         self.mode = mode
