@@ -1,5 +1,7 @@
 import torch
 import numpy as np
+from torch.nn import CrossEntropyLoss
+from sklearn.metrics import accuracy_score
 from base import BaseTrainer
 
 
@@ -22,7 +24,7 @@ class Trainer(BaseTrainer):
         self.do_validation = self.valid_data_loader is not None
         self.log_step = int(np.sqrt(self.batch_size))
 
-    def _to_tensor(self, data, target):
+    def _to_tensor(self, data, target1, target2):
         """
          Handle GPU is applicable
         Args:
@@ -33,8 +35,8 @@ class Trainer(BaseTrainer):
             data, target
         """
         if self.with_cuda:
-            data, target = data.to(self.gpu), target.to(self.gpu)
-        return data, target
+            data, target1, target2 = data.to(self.gpu), target1.to(self.gpu), target2.to(self.gpu)
+        return data, target1, target2
 
     def _eval_metrics(self, output, target):
         """
@@ -66,21 +68,33 @@ class Trainer(BaseTrainer):
         self.model.train()
 
         losses = []
+        classification_losses = []
+        augmentation_losses = []
+        classification_accuracy = 0
         total_metrics = np.zeros(len(self.metrics))
-        for batch_idx, (data, target) in enumerate(self.data_loader):
-            data, target = self._to_tensor(data, target)
+        for batch_idx, (data, target_augmentations, target_classification) in enumerate(self.data_loader):
+            data, target_augmentations, target_classification = self._to_tensor(data, target_augmentations, target_classification)
             self.optimizer.zero_grad()
-            output = self.model(data)
+            out_augmentations, out_classification = self.model(data)
 
-            loss = self.loss(output, target)
+            loss_augmentation = self.loss(out_augmentations, target_augmentations)
+            loss_classification = CrossEntropyLoss()(out_classification, target_classification)
+            loss = loss_augmentation + loss_classification
             loss.backward()
 
             self.optimizer.step()
             losses.append(loss.data.mean())
+            augmentation_losses.append(loss_augmentation.data.mean())
+            classification_losses.append(loss_classification.data.mean())
 
-            output = torch.sigmoid(output)
-            accuracy_metrics = self._eval_metrics(output, target)
+            out_augmentations = torch.sigmoid(out_augmentations)
+
+            accuracy_metrics = self._eval_metrics(out_augmentations, target_augmentations)
             total_metrics += accuracy_metrics
+
+            out2 = out_classification.cpu().data.numpy()
+            out2 = np.argmax(out2, axis=1)
+            classification_accuracy += accuracy_score(target_classification, out2)
 
             if self.verbosity >= 2 and batch_idx % self.log_step == 0:
                 self.logger.info(
@@ -96,7 +110,10 @@ class Trainer(BaseTrainer):
 
         log = {
             'loss': float(np.mean(losses)),
-            'metrics': (total_metrics / len(self.data_loader)).tolist()
+            'classification_loss': float(np.mean(classification_losses)),
+            'augmentation_loss': float(np.mean(augmentation_losses)),
+            'classification_accuracy': classification_accuracy / len(self.data_loader),
+            'metrics': (total_metrics / len(self.data_loader)).tolist(),
         }
 
         if self.do_validation:
@@ -115,20 +132,36 @@ class Trainer(BaseTrainer):
         """
         self.model.eval()
         val_losses = []
+        classification_losses = []
+        augmentation_losses = []
+        classification_accuracy = 0
         total_val_metrics = np.zeros(len(self.metrics))
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-                data, target = self._to_tensor(data, target)
-
-                output = self.model(data)
-                loss = self.loss(output, target)
+            for batch_idx, (data, target_augmentations, target_classification) in enumerate(self.valid_data_loader):
+                data, target_augmentations, target_classification = self._to_tensor(data, target_augmentations,
+                                                                                    target_classification)
+                out_augmentations, out_classification = self.model(data)
+                loss_augmentation = self.loss(out_augmentations, target_augmentations)
+                loss_classification = CrossEntropyLoss()(out_classification, target_classification)
+                loss = loss_augmentation + loss_classification
+                loss.backward()
 
                 val_losses.append(loss.data.mean())
-                total_val_metrics += self._eval_metrics(output, target)
+                augmentation_losses.append(loss_augmentation.data.mean())
+                classification_losses.append(loss_classification.data.mean())
+
+                out_augmentations = torch.sigmoid(out_augmentations)
+                total_val_metrics += self._eval_metrics(out_augmentations, target_augmentations)
+                out2 = out_classification.cpu().data.numpy()
+                out2 = np.argmax(out2, axis=1)
+                classification_accuracy += accuracy_score(target_classification, out2)
 
         return {
             'val_loss': float(np.mean(val_losses)),
-            'val_metrics': (total_val_metrics / len(self.valid_data_loader)).tolist()
+            'val_metrics': (total_val_metrics / len(self.valid_data_loader)).tolist(),
+            'val_classification_loss': float(np.mean(classification_losses)),
+            'val_augmentation_loss': float(np.mean(augmentation_losses)),
+            'val_classification_accuracy': classification_accuracy / len(self.data_loader),
         }
 
     def test(self):

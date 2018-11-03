@@ -27,9 +27,9 @@ class AutoAugmentDataset(data.Dataset):
         image_np = np.array(x)
         augmented = transforms(image=image_np)
         x = to_tensor(augmented['image'])
-        y = torch.FloatTensor(labels)
+        z = torch.FloatTensor(labels)
 
-        return x, y
+        return x, z, y
 
     def __len__(self):
         return len(self.dataset)

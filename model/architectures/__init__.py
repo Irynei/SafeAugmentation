@@ -1,4 +1,5 @@
 from .densenet_32x32 import (
+    my_densenet121,
     densenet121_32x32,
     densenet161_32x32,
     densenet169_32x32,
