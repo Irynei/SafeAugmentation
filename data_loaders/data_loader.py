@@ -114,11 +114,6 @@ class TinyImageNetDataLoader(BaseDataLoader):
                 base_transforms=self.base_transforms,
                 augmentations=self.augmentations,
             ),
-            'val': AutoAugmentDataset(
-                dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/val')),
-                base_transforms=self.base_transforms,
-                augmentations=self.augmentations,
-            ),
             'test': AutoAugmentDataset(
                 dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/test')),
                 base_transforms=self.base_transforms,
@@ -151,11 +146,6 @@ class TinyImageNetDataLoaderImageClassification(BaseDataLoader):
         self.dataset = {
             'train': AlbumentationsDataset(
                 dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/train')),
-                base_transforms=self.base_transforms,
-                augmentations=self.augmentations,
-            ),
-            'val': AlbumentationsDataset(
-                dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/val')),
                 base_transforms=self.base_transforms,
                 augmentations=self.augmentations,
             ),

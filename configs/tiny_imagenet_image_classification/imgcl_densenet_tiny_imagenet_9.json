@@ -23,7 +23,8 @@
     },
     "loss": "CrossEntropyLoss",
     "validation": {
-        "validation_split": 0
+        "validation_split": 0.1,
+        "shuffle": true
     },
     "lr_scheduler": {
         "lr_scheduler_type": "ReduceLROnPlateau",
