@@ -156,29 +156,19 @@ class Trainer(BaseTrainer):
 
                 test_losses.append(loss.data.mean())
 
-                output = torch.sigmoid(output)
-                # TODO make threshold configurable
-                predicted = (output.cpu().data.numpy() > 0.5)
-                false_positives += predicted.sum(axis=0)
-
-                per_class_batch = (predicted == target).sum(0).type(torch.DoubleTensor) / self.batch_size
-                per_class_accuracy += per_class_batch
-                
-                true_positives += np.logical_and(predicted, target).sum(0)
-                total_targets += target.sum(0)
-
+                # output = torch.sigmoid(output)
+                # TODO make threshold con
+               
                 accuracy_metrics = self._eval_metrics(output, target)
                 total_test_metrics += accuracy_metrics
 
                 self.logger.info(
-                    'Test: [{}/{} ({:.0f}%)] Loss: {:.6f} Accuracy: {:.6f} Jaccard Score: {:.6f} PerClassAcc {}'.format(
+                    'Test: [{}/{} ({:.0f}%)] Loss: {:.6f} Accuracy: {:.6f}'.format(
                         batch_idx * self.test_data_loader.batch_size,
                         len(self.test_data_loader) * self.test_data_loader.batch_size,
                         100.0 * batch_idx / len(self.test_data_loader),
                         loss.data.mean(),
-                        accuracy_metrics[0] if len(accuracy_metrics) else 0,
-                        accuracy_metrics[1] if len(accuracy_metrics) else 0,
-                        per_class_batch
+                        accuracy_metrics[0] if len(accuracy_metrics) else 0
                     )
                 )
 
@@ -186,7 +176,3 @@ class Trainer(BaseTrainer):
             float(np.mean(test_losses)),
             (total_test_metrics / len(self.test_data_loader)).tolist()[0]
         ))
-        self.logger.info("Test False Positives: {}".format(false_positives))
-        self.logger.info("Per Class Accuracy: {}".format((per_class_accuracy / len(self.test_data_loader)).tolist()))
-        self.logger.info("Labels distribution: {}".format(total_targets))
-        self.logger.info("True positives: {}".format(true_positives))
