@@ -144,7 +144,6 @@ class Trainer(BaseTrainer):
                 loss_augmentation = self.loss(out_augmentations, target_augmentations)
                 loss_classification = CrossEntropyLoss()(out_classification, target_classification)
                 loss = loss_augmentation + loss_classification
-                loss.backward()
 
                 val_losses.append(loss.data.mean())
                 augmentation_losses.append(loss_augmentation.data.mean())
@@ -176,20 +175,21 @@ class Trainer(BaseTrainer):
         total_test_metrics = np.zeros(len(self.metrics))
         false_positives = np.zeros(self.config['model_params']['num_classes'])
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.test_data_loader):
-                data, target = self._to_tensor(data, target)
+            for batch_idx, (data, target_augmentations, target_classification) in enumerate(self.test_data_loader):
+                data, target_augmentations, target_classification = self._to_tensor(data, target_augmentations,
+                                                                                    target_classification)
 
-                output = self.model(data)
+                out_augmentations, out_classification = self.model(data)
 
-                loss = self.loss(output, target)
+                loss = self.loss(out_augmentations, target_augmentations)
 
                 test_losses.append(loss.data.mean())
 
-                output = torch.sigmoid(output)
+                out_augmentations = torch.sigmoid(out_augmentations)
                 # TODO make threshold configurable
-                false_positives += (output.data.numpy() > 0.5).sum(axis=0)
+                false_positives += (out_augmentations.cpu().data.numpy() > 0.5).sum(axis=0)
 
-                accuracy_metrics = self._eval_metrics(output, target)
+                accuracy_metrics = self._eval_metrics(out_augmentations, target_augmentations)
                 total_test_metrics += accuracy_metrics
 
                 self.logger.info(

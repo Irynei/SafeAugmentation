@@ -46,7 +46,8 @@ class MyDensenet(torchvision_models.DenseNet):
 
         # Linear layer
         self.classifier = nn.Linear(num_features, num_classes)
-
+        
+        self.image_classifier = nn.Linear(self.classifier.in_features, 200)
         # Official init from torch repo.
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -61,9 +62,9 @@ class MyDensenet(torchvision_models.DenseNet):
         features = self.features(x)
         out = F.relu(features, inplace=True)
         out = F.adaptive_avg_pool2d(out, output_size=(1, 1)).view(features.size(0), -1)
-        out1 = out.copy()
+        out1 = out.clone()
         out_augmentations = self.classifier(out)
-        out_classification = nn.Linear(self.classifier.in_features, 200)(out1)
+        out_classification = self.image_classifier(out1)
         return out_augmentations, out_classification
 
 

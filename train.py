@@ -19,7 +19,7 @@ def main(config, resume, experiment_path):
 
     data_loader = get_dataloader_instance(config['data_loader']['name'], config)
     valid_data_loader = data_loader.get_validation_loader()
-
+    test_data_loader = data_loader.get_test_loader()
     model = get_model_instance(config['model_name'], **config['model_params'])
     log_model_summary(model)
 
@@ -31,9 +31,10 @@ def main(config, resume, experiment_path):
                       config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
+                      test_data_loader=test_data_loader,
                       train_logger=train_logger)
 
-    trainer.train()
+    trainer.test()
 
 
 if __name__ == '__main__':
@@ -57,7 +58,7 @@ if __name__ == '__main__':
 
     ensure_dir(experiment_path)
     # store logs in a file
-    log_file = os.path.join(experiment_path, 'train_logs.txt')
-    log.logger.addHandler(log.logging.FileHandler(log_file))
+    # log_file = os.path.join(experiment_path, 'train_logs.txt')
+    # log.logger.addHandler(log.logging.FileHandler(log_file))
 
     main(config, args.resume, experiment_path)
