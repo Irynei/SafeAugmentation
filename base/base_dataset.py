@@ -32,6 +32,59 @@ class AlbumentationsDataset(data.Dataset):
         return len(self.dataset)
 
 
+class AlbumentationsDatasetV2(data.Dataset):
+    """
+    Dataset that works with transformations from albumentations lib
+
+    """
+    def __init__(self, dataset, base_transforms, augmentations, max_size=5, train=True):
+        self.dataset = dataset
+        self.base_transforms = base_transforms
+        self.augmentations = augmentations
+        self.max_size = max_size
+        self.train = train
+
+    def __getitem__(self, index):
+        x, y = self.dataset[index]
+
+        trfms = self.get_subset_of_transforms()
+        trfms.extend(self.base_transforms)
+        transforms = Compose(trfms)
+
+        image_np = np.array(x)
+        augmented = transforms(image=image_np)
+        x = to_tensor(augmented['image'])
+
+        return x, y
+
+    def __len__(self):
+        return len(self.dataset)
+
+
+    def get_subset_of_transforms(self):
+        """
+        in case of train dataset:
+            Randomly get size of subset and then randomly choose subset of transformations
+        in case of test dataset:
+            Subset of transformations is always empty
+
+        Returns:
+            list of chosen transformations, one-hot-encoded labels
+
+        """
+        all_transforms_size = len(self.augmentations)
+
+        if self.train:
+            # size from 0 to max_size - 1
+            subset_size = self.max_size
+            all_transforms_idx = np.arange(all_transforms_size)
+            # get random subset without duplicates
+            np.random.shuffle(all_transforms_idx)
+            transform_idx = all_transforms_idx[:subset_size]
+            subset_transforms = [self.augmentations[i] for i in transform_idx]
+        return subset_transforms
+
+
 class AutoAugmentDataset(data.Dataset):
     """
     Randomly applies subset of augmentations and set them as labels
@@ -60,6 +113,7 @@ class AutoAugmentDataset(data.Dataset):
 
     def __len__(self):
         return len(self.dataset)
+
 
     def get_subset_of_transforms(self):
         """

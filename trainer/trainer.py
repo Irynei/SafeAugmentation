@@ -142,10 +142,7 @@ class Trainer(BaseTrainer):
         self.model.eval()
         test_losses = []
         total_test_metrics = np.zeros(len(self.metrics))
-        per_class_accuracy = np.zeros(15)
-        total_targets = np.zeros(15)
-        true_positives = np.zeros(15)
-        false_positives = np.zeros(self.config['model_params']['num_classes'])
+
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.test_data_loader):
                 data, target = self._to_tensor(data, target)

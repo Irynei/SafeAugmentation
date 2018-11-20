@@ -4,10 +4,12 @@ from albumentations import Normalize, Resize
 from base import (
     BaseDataLoader,
     AutoAugmentDataset,
-    AlbumentationsDataset
+    AlbumentationsDataset,
+    AlbumentationsDatasetV2
 )
 from augmentations.augmentation import (
     get_strong_augmentations,
+    get_good_augmentations
 )
 from utils.util import download_and_unzip, create_val_folder
 
@@ -24,6 +26,8 @@ def get_dataloader_instance(dataloader_name, config):
         dataloader = TinyImageNetDataLoader
     elif dataloader_name == 'TinyImageNetDataLoaderImageClassification':
         dataloader = TinyImageNetDataLoaderImageClassification
+    elif dataloader_name == 'TinyImageNetDataLoaderImageClassificationV2':
+        dataloader = TinyImageNetDataLoaderImageClassificationV2
     else:
         raise NameError("Dataloader '{dataloader}' not found.".format(dataloader=dataloader_name))
 
@@ -114,6 +118,7 @@ class TinyImageNetDataLoader(BaseDataLoader):
                 dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/train')),
                 base_transforms=self.base_transforms,
                 augmentations=self.augmentations,
+                max_size=self.max_size
             ),
             'test': AutoAugmentDataset(
                 dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/val/images')),
@@ -138,26 +143,56 @@ class TinyImageNetDataLoaderImageClassification(BaseDataLoader):
         self.data_dir = os.path.join(config['data_loader']['data_dir'], 'tiny_imagenet')
         download_and_unzip(self.url, self.filename, self.data_dir)
         create_val_folder(os.path.join(self.data_dir, 'tiny-imagenet-200'))
-        augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
-        self.augm_index = int(config['augmentation']['index'])
+        augmentations = get_good_augmentations(width=self.image_size[0], height=self.image_size[1])
+        print('Using good augmentations')
+        self.max_size = int(config['augmentation']['max_size'])
         self.base_transforms.append(Resize(width=self.image_size[0], height=self.image_size[1]))
-        try:
-            self.augmentations = [augmentations[self.augm_index]]
-        except IndexError:
-            self.augmentations = []
         self.dataset = {
-            'train': AlbumentationsDataset(
+            'train': AlbumentationsDatasetV2(
                 dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/train')),
                 base_transforms=self.base_transforms,
-                augmentations=self.augmentations,
+                augmentations=augmentations,
+                max_size=self.max_size
             ),
-            'test': AlbumentationsDataset(
+            'test': AlbumentationsDatasetV2(
                 dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/val/images')),
                 base_transforms=self.base_transforms,
                 augmentations=[],
             )
         }
         super(TinyImageNetDataLoaderImageClassification, self).__init__(self.dataset, config)
+
+
+class TinyImageNetDataLoaderImageClassificationV2(BaseDataLoader):
+
+    filename = "tiny-imagenet-200.zip"
+    url = "http://cs231n.stanford.edu/tiny-imagenet-200.zip"
+    base_transforms = [
+        Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]
+
+    def __init__(self, config):
+        self.image_size = (64, 64)
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'tiny_imagenet')
+        download_and_unzip(self.url, self.filename, self.data_dir)
+        create_val_folder(os.path.join(self.data_dir, 'tiny-imagenet-200'))
+        augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
+        self.base_transforms.append(Resize(width=self.image_size[0], height=self.image_size[1]))
+        self.max_size = int(config['augmentation']['max_size'])
+        self.dataset = {
+            'train': AlbumentationsDatasetV2(
+                dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/train')),
+                base_transforms=self.base_transforms,
+                augmentations=augmentations,
+                max_size=self.max_size
+            ),
+            'test': AlbumentationsDatasetV2(
+                dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/val/images')),
+                base_transforms=self.base_transforms,
+                augmentations=[],
+            )
+        }
+        super(TinyImageNetDataLoaderImageClassificationV2, self).__init__(self.dataset, config)
 
 
 class CIFAR10DataLoaderImageClassification(BaseDataLoader):

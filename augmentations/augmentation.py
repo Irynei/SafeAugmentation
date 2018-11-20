@@ -18,8 +18,18 @@ from albumentations import (
     Blur,
 )
 
-__all__ = ['get_strong_augmentations', 'get_medium_augmentations', 'get_light_augmentations']
+__all__ = ['get_strong_augmentations', 'get_medium_augmentations', 'get_light_augmentations', 'get_good_augmentations']
 
+def get_good_augmentations(width, height):
+    return [
+        RandomCrop(height-14, width-14, p=0.5),
+        CenterCrop(height-14, width-14, p=0.5),
+        RandomSizedCrop((height - 14, height - 14), height, width, p=0.5),
+        HorizontalFlip(p=0.5),
+        RandomRotate90(p=0.5),
+        RandomBrightness(p=0.5),
+        RandomGamma(p=0.5)
+    ]
 
 def get_strong_augmentations(width, height):
     # TODO maybe consider more augmentations and play with params
@@ -40,7 +50,6 @@ def get_strong_augmentations(width, height):
         Blur(blur_limit=3, p=0.5),
         GaussNoise(p=0.5)
     ]
-
 
 def get_medium_augmentations(width, height):
     return [
