@@ -1,6 +1,6 @@
 import os
 from torchvision import datasets
-from albumentations import Normalize
+from albumentations import Normalize, Resize
 from base import (
     BaseDataLoader,
     AutoAugmentDataset
@@ -8,6 +8,7 @@ from base import (
 from augmentations.augmentation import (
     get_strong_augmentations,
 )
+from utils.util import download_and_unzip, create_val_folder
 
 
 def get_dataloader_instance(dataloader_name, config):
@@ -16,6 +17,8 @@ def get_dataloader_instance(dataloader_name, config):
         dataloader = CIFAR10DataLoader
     elif dataloader_name == 'SVHNDataLoader':
         dataloader = SVHNDataLoader
+    elif dataloader_name == 'TinyImageNetDataLoader':
+        dataloader = TinyImageNetDataLoader
     else:
         raise NameError("Dataloader '{dataloader}' not found.".format(dataloader=dataloader_name))
 
@@ -83,3 +86,35 @@ class SVHNDataLoader(BaseDataLoader):
             )
         }
         super(SVHNDataLoader, self).__init__(self.dataset, config)
+
+
+class TinyImageNetDataLoader(BaseDataLoader):
+
+    filename = "tiny-imagenet-200.zip"
+    url = "http://cs231n.stanford.edu/tiny-imagenet-200.zip"
+    base_transforms = [
+        Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ]
+
+    def __init__(self, config):
+        self.image_size = (64, 64)
+        self.augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
+        self.base_transforms.append(Resize(width=self.image_size[0], height=self.image_size[1]))
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'tiny_imagenet')
+        self.max_size = int(config['augmentation']['max_size'])
+        download_and_unzip(self.url, self.filename, self.data_dir)
+        create_val_folder(os.path.join(self.data_dir, 'tiny-imagenet-200'))
+        self.dataset = {
+            'train': AutoAugmentDataset(
+                dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/train')),
+                base_transforms=self.base_transforms,
+                augmentations=self.augmentations,
+                max_size=self.max_size
+            ),
+            'test': AutoAugmentDataset(
+                dataset=datasets.ImageFolder(os.path.join(self.data_dir, 'tiny-imagenet-200/val/images')),
+                base_transforms=self.base_transforms,
+                augmentations=[],
+            )
+        }
+        super(TinyImageNetDataLoader, self).__init__(self.dataset, config)
