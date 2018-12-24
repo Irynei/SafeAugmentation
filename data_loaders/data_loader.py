@@ -69,6 +69,7 @@ class SVHNDataLoader(BaseDataLoader):
     def __init__(self, config):
         self.image_size = (32, 32)
         self.augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
+        self.base_transforms.append(Resize(width=self.image_size[0], height=self.image_size[1]))
         self.data_dir = os.path.join(config['data_loader']['data_dir'], 'SVHN')
         self.max_size = int(config['augmentation']['max_size'])
         self.dataset = {
