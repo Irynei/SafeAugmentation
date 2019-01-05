@@ -174,6 +174,7 @@ class Trainer(BaseTrainer):
         test_losses = []
         total_test_metrics = np.zeros(len(self.metrics))
         false_positives = np.zeros(self.config['model_params']['num_classes'])
+        per_class_accuracy = np.zeros(15)
         with torch.no_grad():
             for batch_idx, (data, target_augmentations, target_classification) in enumerate(self.test_data_loader):
                 data, target_augmentations, target_classification = self._to_tensor(data, target_augmentations,
@@ -188,7 +189,7 @@ class Trainer(BaseTrainer):
                 out_augmentations = torch.sigmoid(out_augmentations)
                 # TODO make threshold configurable
                 false_positives += (out_augmentations.cpu().data.numpy() > 0.5).sum(axis=0)
-
+                per_class_accuracy += (((out_augmentations.cpu().data.numpy() > 0.5) == target_augmentations.cpu().data.numpy()).sum(axis=0) / self.test_data_loader.batch_size)
                 accuracy_metrics = self._eval_metrics(out_augmentations, target_augmentations)
                 total_test_metrics += accuracy_metrics
 
@@ -206,4 +207,5 @@ class Trainer(BaseTrainer):
             float(np.mean(test_losses)),
             (total_test_metrics / len(self.test_data_loader)).tolist()[0]
         ))
-        self.logger.info("Test False Positives: {}".format(false_positives))
+        self.logger.info("Per Class Accuraccy: {}".format((per_class_accuracy / len(self.test_data_loader)).tolist()))
+        self.logger.info("Test False Positives: {}".format(false_positives.tolist()))
