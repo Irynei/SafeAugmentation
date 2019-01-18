@@ -3,6 +3,7 @@ import numpy as np
 from torch.utils import data
 from albumentations import Compose
 from torchvision.transforms.functional import to_tensor
+import augmentations.augmentation_autoaugment as augmentation_transforms
 
 
 class AlbumentationsDataset(data.Dataset):
@@ -83,6 +84,36 @@ class AlbumentationsDatasetV2(data.Dataset):
             transform_idx = all_transforms_idx[:subset_size]
             subset_transforms = [self.augmentations[i] for i in transform_idx]
         return subset_transforms
+
+
+class AutoAugmentDatasetByGoogle(data.Dataset):
+    """
+    Dataset that works with AutoAugment policies
+
+    """
+    def __init__(self, dataset, base_transforms, policies, train=True):
+        self.dataset = dataset
+        self.base_transforms = base_transforms
+        self.good_policies = policies
+        self.train = train
+
+    def __getitem__(self, index):
+        x, y = self.dataset[index]
+
+        image_np = np.array(x)
+        normalized = self.base_transforms[0](image=image_np)
+        final_img = normalized['image']
+        if self.train:
+            epoch_policy = self.good_policies[np.random.choice(len(self.good_policies))]
+            final_img = augmentation_transforms.apply_policy(epoch_policy, image_np)
+            final_img = augmentation_transforms.random_flip(augmentation_transforms.zero_pad_and_crop(final_img, 4))
+
+            final_img = augmentation_transforms.cutout_numpy(final_img)
+        x = to_tensor(final_img)
+        return x.type(torch.FloatTensor), y
+
+    def __len__(self):
+        return len(self.dataset)
 
 
 class AutoAugmentDataset(data.Dataset):

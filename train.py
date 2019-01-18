@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     ensure_dir(experiment_path)
     # store logs in a file
-    # log_file = os.path.join(experiment_path, 'train_logs.txt')
-    # log.logger.addHandler(log.logging.FileHandler(log_file))
+    log_file = os.path.join(experiment_path, 'train_logs.txt')
+    log.logger.addHandler(log.logging.FileHandler(log_file))
 
     main(config, args.resume, experiment_path)

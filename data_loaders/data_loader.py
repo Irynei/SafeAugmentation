@@ -5,13 +5,16 @@ from base import (
     BaseDataLoader,
     AutoAugmentDataset,
     AlbumentationsDataset,
-    AlbumentationsDatasetV2
+    AlbumentationsDatasetV2,
+    AutoAugmentDatasetByGoogle
 )
 from augmentations.augmentation import (
+    good_policies,
     get_strong_augmentations,
     get_good_augmentations
 )
 from utils.util import download_and_unzip, create_val_folder
+import augmentations.augmentation_autoaugment as augmentation_transforms
 
 
 def get_dataloader_instance(dataloader_name, config):
@@ -22,6 +25,8 @@ def get_dataloader_instance(dataloader_name, config):
         dataloader = SVHNDataLoader
     elif dataloader_name == 'CIFAR10DataLoaderImageClassification':
         dataloader = CIFAR10DataLoaderImageClassification
+    elif dataloader_name == 'CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle':
+        dataloader = CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle
     elif dataloader_name == 'TinyImageNetDataLoader':
         dataloader = TinyImageNetDataLoader
     elif dataloader_name == 'TinyImageNetDataLoaderImageClassification':
@@ -225,3 +230,30 @@ class CIFAR10DataLoaderImageClassification(BaseDataLoader):
             )
         }
         super(CIFAR10DataLoaderImageClassification, self).__init__(self.dataset, config)
+
+
+class CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle(BaseDataLoader):
+    """
+    CIFAR10 data loader
+    """
+    base_transforms = [
+        Normalize(augmentation_transforms.MEANS, augmentation_transforms.STDS),
+    ]
+
+    def __init__(self, config):
+        self.image_size = (32, 32)
+        policies = good_policies()
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'cifar10')
+        self.dataset = {
+            'train': AutoAugmentDatasetByGoogle(
+                dataset=datasets.CIFAR10(self.data_dir, train=True, download=True),
+                base_transforms=self.base_transforms,
+                policies=policies
+            ),
+            'test': AutoAugmentDatasetByGoogle(
+                dataset=datasets.CIFAR10(self.data_dir, train=False, download=True),
+                base_transforms=self.base_transforms,
+                policies=policies
+            )
+        }
+        super(CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle, self).__init__(self.dataset, config)
