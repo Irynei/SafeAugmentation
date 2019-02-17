@@ -102,6 +102,7 @@ class BaseTrainer:
                     self.lr_scheduler.step(log['val_loss'])
                 else:
                     self.lr_scheduler.step(epoch)
+                    #print(self.lr_scheduler.get_lr())
 
             # stopping early logic
             if self.early_stopping:

@@ -10,6 +10,7 @@ from base import (
 )
 from augmentations.augmentation import (
     good_policies,
+    get_good_policy_svhn,
     get_strong_augmentations,
     get_good_augmentations
 )
@@ -23,10 +24,20 @@ def get_dataloader_instance(dataloader_name, config):
         dataloader = CIFAR10DataLoader
     elif dataloader_name == 'SVHNDataLoader':
         dataloader = SVHNDataLoader
+    elif dataloader_name == 'SVHNDataLoaderImageClassification':
+        dataloader = SVHNDataLoaderImageClassification
     elif dataloader_name == 'CIFAR10DataLoaderImageClassification':
         dataloader = CIFAR10DataLoaderImageClassification
+    elif dataloader_name == 'CIFAR10DataLoaderImageClassificationSafeAugment':
+        dataloader = CIFAR10DataLoaderImageClassificationSafeAugment
+    elif dataloader_name == 'CIFAR100DataLoaderImageClassification':
+        dataloader = CIFAR100DataLoaderImageClassification
     elif dataloader_name == 'CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle':
         dataloader = CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle
+    elif dataloader_name == 'SVHNDataLoaderImageClassificationAutoAugmentByGoogle':
+        dataloader = SVHNDataLoaderImageClassificationAutoAugmentByGoogle
+    elif dataloader_name == 'CIFAR100DataLoaderImageClassificationAutoAugmentByGoogle':
+        dataloader = CIFAR100DataLoaderImageClassificationAutoAugmentByGoogle
     elif dataloader_name == 'TinyImageNetDataLoader':
         dataloader = TinyImageNetDataLoader
     elif dataloader_name == 'TinyImageNetDataLoaderImageClassification':
@@ -205,31 +216,90 @@ class CIFAR10DataLoaderImageClassification(BaseDataLoader):
     CIFAR10 data loader
     """
     base_transforms = [
-        Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+        Normalize(augmentation_transforms.MEANS, augmentation_transforms.STDS),
     ]
 
     def __init__(self, config):
         self.image_size = (32, 32)
-        augmentations = get_strong_augmentations(width=self.image_size[0], height=self.image_size[1])
+        augmentations = get_good_augmentations(width=self.image_size[0], height=self.image_size[1])
         self.data_dir = os.path.join(config['data_loader']['data_dir'], 'cifar10')
-        self.augm_index = int(config['augmentation']['index'])
-        try:
-            self.augmentations = [augmentations[self.augm_index]]
-        except IndexError:
-            self.augmentations = []
+        self.max_size = int(config['augmentation']['max_size'])
         self.dataset = {
-            'train': AlbumentationsDataset(
+            'train': AlbumentationsDatasetV2(
                 dataset=datasets.CIFAR10(self.data_dir, train=True, download=True),
                 base_transforms=self.base_transforms,
-                augmentations=self.augmentations,
+                augmentations=augmentations,
+                max_size=self.max_size,
             ),
-            'test': AlbumentationsDataset(
+            'test': AlbumentationsDatasetV2(
                 dataset=datasets.CIFAR10(self.data_dir, train=False, download=True),
                 base_transforms=self.base_transforms,
-                augmentations=self.augmentations,
+                augmentations=[],
+                train=False
             )
         }
         super(CIFAR10DataLoaderImageClassification, self).__init__(self.dataset, config)
+
+
+class CIFAR10DataLoaderImageClassificationSafeAugment(BaseDataLoader):
+    """
+    CIFAR10 data loader
+    """
+    base_transforms = [
+        Normalize(augmentation_transforms.MEANS, augmentation_transforms.STDS),
+    ]
+
+    def __init__(self, config):
+        self.image_size = (32, 32)
+        self.augmentations = get_good_augmentations(width=self.image_size[0], height=self.image_size[1])
+        #self.base_transforms.append(Resize(width=self.image_size[0], height=self.image_size[1]))
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'cifar10')
+        self.max_size = int(config['augmentation']['max_size'])
+        self.dataset = {
+            'train': AlbumentationsDatasetV2(
+                dataset=datasets.CIFAR10(self.data_dir, train=True, download=True),
+                base_transforms=self.base_transforms,
+                augmentations=self.augmentations,
+                max_size=self.max_size,
+            ),
+            'test': AlbumentationsDatasetV2(
+                dataset=datasets.CIFAR10(self.data_dir, train=False, download=True),
+                base_transforms=self.base_transforms,
+                augmentations=[],
+                train=False
+            )
+        }
+        super(CIFAR10DataLoaderImageClassificationSafeAugment, self).__init__(self.dataset, config)
+
+
+class CIFAR100DataLoaderImageClassification(BaseDataLoader):
+    """
+    CIFAR100 data loader
+    """
+    base_transforms = [
+        Normalize(augmentation_transforms.MEANS, augmentation_transforms.STDS),
+    ]
+
+    def __init__(self, config):
+        self.image_size = (32, 32)
+        augmentations = get_good_augmentations(width=self.image_size[0], height=self.image_size[1])
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'cifar10')
+        self.max_size = int(config['augmentation']['max_size'])
+        self.dataset = {
+            'train': AlbumentationsDatasetV2(
+                dataset=datasets.CIFAR100(self.data_dir, train=True, download=True),
+                base_transforms=self.base_transforms,
+                augmentations=augmentations,
+                max_size=self.max_size
+            ),
+            'test': AlbumentationsDatasetV2(
+                dataset=datasets.CIFAR100(self.data_dir, train=False, download=True),
+                base_transforms=self.base_transforms,
+                augmentations=[],
+                train=False
+            )
+        }
+        super(CIFAR100DataLoaderImageClassification, self).__init__(self.dataset, config)
 
 
 class CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle(BaseDataLoader):
@@ -253,7 +323,92 @@ class CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle(BaseDataLoader):
             'test': AutoAugmentDatasetByGoogle(
                 dataset=datasets.CIFAR10(self.data_dir, train=False, download=True),
                 base_transforms=self.base_transforms,
-                policies=policies
+                policies=[],
+                train=False
             )
         }
         super(CIFAR10DataLoaderImageClassificationAutoAugmentByGoogle, self).__init__(self.dataset, config)
+
+class CIFAR100DataLoaderImageClassificationAutoAugmentByGoogle(BaseDataLoader):
+    """
+    CIFAR100 data loader
+    """
+    base_transforms = [
+        Normalize(augmentation_transforms.MEANS, augmentation_transforms.STDS),
+    ]
+
+    def __init__(self, config):
+        self.image_size = (32, 32)
+        policies = good_policies()
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'cifar100')
+        self.dataset = {
+            'train': AutoAugmentDatasetByGoogle(
+                dataset=datasets.CIFAR100(self.data_dir, train=True, download=True),
+                base_transforms=self.base_transforms,
+                policies=policies
+            ),
+            'test': AutoAugmentDatasetByGoogle(
+                dataset=datasets.CIFAR100(self.data_dir, train=False, download=True),
+                base_transforms=self.base_transforms,
+                policies=[],
+                train=False
+            )
+        }
+        super(CIFAR100DataLoaderImageClassificationAutoAugmentByGoogle, self).__init__(self.dataset, config)
+
+class SVHNDataLoaderImageClassificationAutoAugmentByGoogle(BaseDataLoader):
+    """
+    CIFAR10 data loader
+    """
+    base_transforms = [
+        Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5]),
+    ]
+
+    def __init__(self, config):
+        self.image_size = (32, 32)
+        policies = get_good_policy_svhn()
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'SVHN')
+        self.dataset = {
+            'train': AutoAugmentDatasetByGoogle(
+                dataset=datasets.SVHN(self.data_dir, split='train', download=True),
+                base_transforms=self.base_transforms,
+                policies=policies
+            ),
+            'test': AutoAugmentDatasetByGoogle(
+                dataset=datasets.SVHN(self.data_dir, split='test', download=True),
+                base_transforms=self.base_transforms,
+                policies=[],
+                train=False
+            )
+        }
+        super(SVHNDataLoaderImageClassificationAutoAugmentByGoogle, self).__init__(self.dataset, config)
+
+class SVHNDataLoaderImageClassification(BaseDataLoader):
+    """
+    SVHN data loader
+    """
+    base_transforms = [
+        Normalize(augmentation_transforms.MEANS, augmentation_transforms.STDS),
+    ]
+
+    def __init__(self, config):
+        self.image_size = (32, 32)
+        augmentations = get_good_augmentations(width=self.image_size[0], height=self.image_size[1])
+        self.data_dir = os.path.join(config['data_loader']['data_dir'], 'SVHN')
+        self.max_size = int(config['augmentation']['max_size'])
+        self.dataset = {
+            'train': AlbumentationsDatasetV2(
+                dataset=datasets.SVHN(self.data_dir, split='train', download=True),
+                base_transforms=self.base_transforms,
+                augmentations=augmentations,
+                max_size=self.max_size,
+            ),
+            'test': AlbumentationsDatasetV2(
+                dataset=datasets.SVHN(self.data_dir, split='test', download=True),
+                base_transforms=self.base_transforms,
+                augmentations=[],
+                train=False
+            )
+        }
+        super(SVHNDataLoaderImageClassification, self).__init__(self.dataset, config)
+

@@ -1,0 +1,47 @@
+{
+    "experiment_name": "image_clasf_cifar10_wideresnet_baseline_nesterov",
+    "cuda": true,
+    "gpu": 0,
+    "augmentation": {
+        "max_size": 2
+    },
+    "data_loader": {
+        "name": "CIFAR10DataLoaderImageClassification",
+        "data_dir": "datasets/",
+        "batch_size": 64,
+        "shuffle": true
+    },
+    "model_name": "Wide_ResNet",
+    "model_params": {
+        "num_classes": 10
+    },
+    "optimizer_type": "SGD",
+    "optimizer_params": {
+        "lr": 0.1,
+        "weight_decay": 0.0005,
+        "momentum": 0.9,
+        "nesterov": true
+    },
+    "loss": "CrossEntropyLoss",
+    "validation": {
+        "validation_split": 0.1,
+        "shuffle": true
+    },
+    "lr_scheduler": {
+        "lr_scheduler_type": "MultiStepLR",
+        "lr_scheduler_freq": 1,
+        "additional_params": {
+            "milestones": [60, 120, 160],
+            "gamma": 0.2
+        }
+    },
+    "metrics": ["accuracy"],
+    "trainer": {
+        "epochs": 200,
+        "save_dir": "experiments/",
+        "save_freq": 100,
+        "verbosity": 2,
+        "monitor": "val_loss",
+        "monitor_mode": "min"
+    }
+}

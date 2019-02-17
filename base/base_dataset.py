@@ -48,15 +48,29 @@ class AlbumentationsDatasetV2(data.Dataset):
     def __getitem__(self, index):
         x, y = self.dataset[index]
 
-        trfms = self.get_subset_of_transforms()
-        trfms.extend(self.base_transforms)
-        transforms = Compose(trfms)
-
         image_np = np.array(x)
-        augmented = transforms(image=image_np)
-        x = to_tensor(augmented['image'])
+        # normalize & safe augmentations
+        if self.train:
+            # baseline
+            #normalized = self.base_transforms[0](image=image_np)
+            #final_img = normalized['image']
+            #final_img = augmentation_transforms.random_flip(augmentation_transforms.zero_pad_and_crop(final_img, 4))
+            # safe augm
+            trfms = self.get_subset_of_transforms()
+            trfms.extend(self.base_transforms)
+            transforms = Compose(trfms)
+            safe_augm = transforms(image=image_np)
+            final_img = safe_augm['image']
+            # cutout
+            #final_img = augmentation_transforms.cutout_numpy(final_img)
+        else:
+            normalized = self.base_transforms[0](image=image_np)
+            final_img = normalized['image']
 
-        return x, y
+
+        x = to_tensor(final_img.copy())
+
+        return x.type(torch.FloatTensor), y
 
     def __len__(self):
         return len(self.dataset)
@@ -100,16 +114,19 @@ class AutoAugmentDatasetByGoogle(data.Dataset):
     def __getitem__(self, index):
         x, y = self.dataset[index]
 
-        image_np = np.array(x)
-        normalized = self.base_transforms[0](image=image_np)
+        final_img = np.array(x)
+        normalized = self.base_transforms[0](image=final_img)
         final_img = normalized['image']
         if self.train:
+            #final_img = augmentation_transforms.random_flip(augmentation_transforms.zero_pad_and_crop(final_img, 4))
             epoch_policy = self.good_policies[np.random.choice(len(self.good_policies))]
-            final_img = augmentation_transforms.apply_policy(epoch_policy, image_np)
-            final_img = augmentation_transforms.random_flip(augmentation_transforms.zero_pad_and_crop(final_img, 4))
+            final_img = augmentation_transforms.apply_policy(epoch_policy, final_img)
+            #final_img = augmentation_transforms.random_flip(augmentation_transforms.zero_pad_and_crop(final_img, 4))
 
-            final_img = augmentation_transforms.cutout_numpy(final_img)
-        x = to_tensor(final_img)
+            #final_img = augmentation_transforms.cutout_numpy(final_img, size=20)
+        #normalized = self.base_transforms[0](image=final_img)
+        #x = normalized['image']
+        x = to_tensor(final_img.copy())
         return x.type(torch.FloatTensor), y
 
     def __len__(self):

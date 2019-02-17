@@ -18,18 +18,18 @@ from albumentations import (
     Blur,
 )
 
-__all__ = ['good_policies', 'get_strong_augmentations', 'get_medium_augmentations', 'get_light_augmentations', 'get_good_augmentations']
+__all__ = ['good_policies', 'get_good_policy_svhn', 'get_strong_augmentations', 'get_medium_augmentations', 'get_light_augmentations', 'get_good_augmentations']
 
 
 def get_good_augmentations(width, height):
     return [
-        RandomCrop(height-14, width-14, p=0.5),
-        CenterCrop(height-14, width-14, p=0.5),
-        RandomSizedCrop((height - 14, height - 14), height, width, p=0.5),
+        RandomSizedCrop((height - 7, height - 7), height, width, p=0.5),
         HorizontalFlip(p=0.5),
         RandomRotate90(p=0.5),
         RandomBrightness(p=0.5),
-        RandomGamma(p=0.5)
+        RandomGamma(p=0.5),
+        #RandomContrast(p=0.5),
+        #GaussNoise(p=0.5)
     ]
 
 def get_strong_augmentations(width, height):
@@ -41,9 +41,9 @@ def get_strong_augmentations(width, height):
         Transpose(p=0.5),
         ToGray(p=0.5),
         ShiftScaleRotate(p=0.5),
-        RandomCrop(height-14, width-14, p=0.5),
-        CenterCrop(height-14, width-14, p=0.5),
-        RandomSizedCrop((height - 14, height - 14), height, width, p=0.5),
+        RandomCrop(height-7, width-7, p=0.5),
+        CenterCrop(height-7, width-7, p=0.5),
+        RandomSizedCrop((height - 7, height - 7), height, width, p=0.5),
         RandomContrast(p=0.5),
         RandomBrightness(p=0.5),
         RandomGamma(p=0.5),
@@ -194,3 +194,34 @@ def good_policies():
     exp1s = exp1_0 + exp1_1 + exp1_2 + exp1_3 + exp1_4 + exp1_5 + exp1_6
     exp2s = exp2_0 + exp2_1 + exp2_2 + exp2_3 + exp2_4 + exp2_5 + exp2_6 + exp2_7
     return  exp0s + exp1s + exp2s
+
+def get_good_policy_svhn():
+    return [
+        [('ShearX',0.9,4), ('Invert',0.2,3)],
+        [('ShearY',0.9,8), ('Invert',0.7,5)],
+        [('Equalize',0.6,5), ('Solarize',0.6,6)],
+        [('Invert',0.9,3), ('Equalize',0.6,3)],
+        [('Equalize',0.6,1), ('Rotate',0.9,3)],
+        [('ShearX',0.9,4), ('AutoContrast',0.8,3)],
+        [('ShearY',0.9,8), ('Invert',0.4,5)],
+        [('ShearY',0.9,5), ('Solarize',0.2,6)],
+        [('Invert',0.9,6), ('AutoContrast',0.8,1)],
+        [('Equalize',0.6,3), ('Rotate',0.9,3)],
+        [('ShearX',0.9,4), ('Solarize',0.3,3)],
+        [('ShearY',0.8,8), ('Invert',0.7,4)],
+        [('Equalize',0.9,5), ('TranslateY',0.6,6)],
+        [('Invert',0.9,4), ('Equalize',0.6,7)],
+        [('Contrast',0.3,3), ('Rotate',0.8,4)],
+        [('Invert',0.8,5), ('TranslateY',0.0,2)],
+        [('ShearY',0.7,6), ('Solarize',0.4,8)],
+        [('Invert',0.6,4), ('Rotate',0.8,4)],
+        [('ShearY',0.3,7), ('TranslateX',0.9,3)],
+        [('ShearX',0.1,6), ('Invert',0.6,5)],
+        [('Solarize',0.7,2), ('TranslateY',0.6,7)],
+        [('ShearY',0.8,4), ('Invert',0.8,8)],
+        [('ShearX',0.7,9), ('TranslateY',0.8,3)],
+        [('ShearY',0.8,5), ('AutoContrast',0.7,3)],
+        [('ShearX',0.7,2), ('Invert',0.1,5)],
+    ]
+
+

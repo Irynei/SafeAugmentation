@@ -8,3 +8,6 @@ from .densenet_32x32 import (
 from .vgg_32x32 import (
     VGG16_32x32
 )
+from .wide_resnet import (
+    Wide_ResNet
+)
